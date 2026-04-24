@@ -1,0 +1,290 @@
+<!DOCTYPE html><html lang="en"> <head><!-- Charset, viewport, theme --><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="Astro v5.18.1"><meta name="color-scheme" content="light dark"><!-- Run before first paint to avoid flash of wrong theme --><script>
+  (function () {
+    try {
+      var stored = localStorage.getItem('theme');
+      var prefersDark = window.matchMedia(
+        '(prefers-color-scheme: dark)',
+      ).matches;
+      var theme =
+        stored === 'dark' || stored === 'light'
+          ? stored
+          : prefersDark
+            ? 'dark'
+            : 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    } catch (e) {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  })();
+</script><!-- Canonical & favicons --><link rel="canonical" href="https://charlie.tools/posts/building-this-blog/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="sitemap" href="/sitemap-index.xml"><link rel="alternate" type="application/rss+xml" title="charlie.tools" href="https://charlie.tools/rss.xml"><!-- Primary meta --><title>This took longer than writing would have — charlie.tools</title><meta name="title" content="This took longer than writing would have — charlie.tools"><meta name="description" content="Why this blog has a Docker Swarm cluster behind it."><meta name="author" content="Charlie Vogt"><meta name="keywords" content="Meta, Astro, Homelab"><!-- Open Graph --><meta property="og:type" content="article"><meta property="og:url" content="https://charlie.tools/posts/building-this-blog/"><meta property="og:title" content="This took longer than writing would have — charlie.tools"><meta property="og:description" content="Why this blog has a Docker Swarm cluster behind it."><meta property="og:image" content="https://charlie.tools/og-default.png"><meta property="og:site_name" content="charlie.tools"><meta property="article:published_time" content="2026-04-24T00:00:00.000Z"><meta property="article:tag" content="Meta"><meta property="article:tag" content="Astro"><meta property="article:tag" content="Homelab"><!-- Twitter --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:url" content="https://charlie.tools/posts/building-this-blog/"><meta name="twitter:title" content="This took longer than writing would have — charlie.tools"><meta name="twitter:description" content="Why this blog has a Docker Swarm cluster behind it."><meta name="twitter:image" content="https://charlie.tools/og-default.png"><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.BFfqj1ee.js"></script><link rel="stylesheet" href="/_astro/_slug_.1y6hjWZe.css"><script type="module" src="/_astro/page.IvKoM_B8.js"></script><style>.kbd-key[data-astro-cid-6vrqdb75]{display:inline-flex;align-items:center;justify-content:center;min-width:1.4em;padding:.05em .4em;font-family:Geist Mono Variable,Geist Mono,ui-monospace,monospace;font-size:.85em;line-height:1.4;border:1px solid rgb(var(--border-strong));border-bottom-width:2px;border-radius:.3rem;background:rgb(var(--bg-raised));color:rgb(var(--fg));margin:0 .1em;vertical-align:baseline;font-weight:500}
+</style><style>.callout{margin:2rem 0;padding:1rem 1.25rem 1.1rem;border:1px solid rgb(var(--border));border-left-width:3px;border-radius:.625rem;background:rgb(var(--bg-raised));font-size:.95em}.callout__head{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;font-family:Geist Mono Variable,Geist Mono,ui-monospace,monospace;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase}.callout__icon{display:inline-flex;width:1.15rem;height:1.15rem;align-items:center;justify-content:center;border-radius:9999px;font-size:.75rem;font-weight:700;line-height:1}.callout__body{color:rgb(var(--fg) / .9);line-height:1.6}.callout__body>:first-child{margin-top:0}.callout__body>:last-child{margin-bottom:0}.callout--note{border-left-color:rgb(var(--accent))}.callout--note .callout__title{color:rgb(var(--accent))}.callout--note .callout__icon{background:rgb(var(--accent) / .15);color:rgb(var(--accent))}.callout--tip{border-left-color:#10b981}.callout--tip .callout__title{color:#059669}.callout--tip .callout__icon{background:#10b9812e;color:#059669}html[data-theme=dark] .callout--tip .callout__title,html[data-theme=dark] .callout--tip .callout__icon{color:#34d399}.callout--warning{border-left-color:#f59e0b}.callout--warning .callout__title{color:#b45309}.callout--warning .callout__icon{background:#f59e0b2e;color:#b45309}html[data-theme=dark] .callout--warning .callout__title,html[data-theme=dark] .callout--warning .callout__icon{color:#fbbf24}.callout--unsourced{border-left-color:rgb(var(--fg-subtle));background:rgb(var(--bg))}.callout--unsourced .callout__title{color:rgb(var(--fg-muted))}.callout--unsourced .callout__icon{background:rgb(var(--fg-subtle) / .2);color:rgb(var(--fg-muted));font-family:Geist Mono Variable,Geist Mono,ui-monospace,monospace}
+</style></head> <body class="flex min-h-svh flex-col"> <header data-pagefind-ignore="all" class="fixed inset-x-0 top-0 z-40 border-b border-border/70 bg-bg/75 backdrop-blur-xl supports-[backdrop-filter]:bg-bg/60"> <div class="mx-auto flex h-14 w-full max-w-content items-center justify-between gap-4 px-screen-px"> <!-- Brand --> <a href="/" class="inline-flex items-center" aria-label="charlie.tools — home"> <span class="group text-lg inline-flex items-baseline font-semibold leading-none" style="letter-spacing: -0.025em;"> <span class="text-fg transition-colors group-hover:text-accent">charlie</span><span class="inline-block text-accent transition-transform duration-300 group-hover:-translate-y-[1px]" style="font-size: 1.15em; line-height: 1; margin: 0 0.01em;" aria-hidden="true">.</span><span class="text-fg transition-colors group-hover:text-accent">tools</span> </span> </a> <!-- Nav + toggle --> <div class="flex items-center gap-1"> <nav aria-label="Primary" class="flex items-center"> <ul class="flex items-center"> <li> <a href="/posts" class="relative rounded-md px-3 py-1.5 text-sm transition-colors text-fg" aria-current="page"> Posts <span class="absolute inset-x-3 -bottom-[13px] h-px bg-accent" aria-hidden="true"></span> </a> </li><li> <a href="/tags" class="relative rounded-md px-3 py-1.5 text-sm transition-colors text-fg-muted hover:text-fg"> Tags  </a> </li><li> <a href="/about" class="relative rounded-md px-3 py-1.5 text-sm transition-colors text-fg-muted hover:text-fg"> About  </a> </li> </ul> </nav> <div class="mx-1.5 h-4 w-px bg-border-strong/70" aria-hidden="true"></div> <button type="button" id="search-trigger" aria-label="Open search" class="group inline-flex h-9 items-center gap-2.5 rounded-lg border border-border bg-bg-raised pl-3 pr-3.5 text-[0.875rem] text-fg-muted transition-colors hover:border-accent/50 hover:bg-bg hover:text-fg"> <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <circle cx="11" cy="11" r="7"></circle> <path d="m20 20-3.5-3.5"></path> </svg> <span>Search</span> </button> <dialog id="search-dialog" aria-label="Search posts" class="search-dialog"> <div class="search-header"> <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="search-header__icon"> <circle cx="11" cy="11" r="7"></circle> <path d="m20 20-3.5-3.5"></path> </svg> <input id="search-input" type="text" placeholder="Search…" autocomplete="off" spellcheck="false" aria-label="Search query" class="search-header__input"> </div> <div id="search-results" class="search-results" aria-live="polite"></div> </dialog>  <script type="module">let n=null,d=!1;async function g(){if(!(n||d)){d=!0;try{n=await new Function("url","return import(/* @vite-ignore */ url)")("/pagefind/pagefind.js"),n&&typeof n.init=="function"&&await n.init()}catch(e){console.warn("[search] pagefind index unavailable",e);const t=document.getElementById("search-results");t&&(t.innerHTML='<div class="search-empty">Search index is generated at build time — it goes live with the next deploy.</div>')}finally{d=!1}}}function u(e){return(e||"").replace(/[&<>"']/g,t=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[t])}function m(){const e=document.getElementById("search-dialog"),t=document.getElementById("search-trigger"),o=document.getElementById("search-input"),a=document.getElementById("search-results");if(!e||!t||!o||!a||t.__bound)return;t.__bound=!0;const s='<div class="search-empty">Type to search posts.</div>';a.innerHTML=s;const h=()=>{e.open||(e.showModal(),o.value="",a.innerHTML=s,o.focus(),g())},p=()=>{e.open&&e.close()};t.addEventListener("click",h),e.addEventListener("click",i=>{if(!e.open)return;const c=e.getBoundingClientRect();(i.clientY<c.top||i.clientY>c.bottom||i.clientX<c.left||i.clientX>c.right)&&p()});let f;o.addEventListener("input",()=>{clearTimeout(f);const i=o.value.trim();if(!i){a.innerHTML=s;return}f=window.setTimeout(async()=>{if(n||await g(),!n||typeof n.search!="function")return;const c=await n.search(i),l=await Promise.all(c.results.slice(0,8).map(r=>r.data()));if(l.length===0){a.innerHTML='<div class="search-empty">No matches for <strong style="color: rgb(var(--fg)); font-weight: 500">'+u(i)+"</strong>.</div>";return}a.innerHTML=l.map(r=>`
+            <a href="${u(r.url)}">
+              <div class="search-results__title">${u(r.meta?.title||r.url)}</div>
+              ${r.excerpt?`<div class="search-results__excerpt">${r.excerpt}</div>`:""}
+            </a>`).join("")},120)})}function y(){window.__searchShortcut||(window.__searchShortcut=!0,document.addEventListener("keydown",e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();const t=document.getElementById("search-dialog");if(!t)return;t.open?t.close():document.getElementById("search-trigger")?.click()}}))}m();y();document.addEventListener("astro:page-load",m);</script> <div class="mx-1.5 h-4 w-px bg-border-strong/70" aria-hidden="true"></div> <button type="button" id="theme-toggle" aria-label="Toggle color theme" class="group inline-flex h-8 w-8 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-bg-raised hover:text-fg"> <svg xmlns="http://www.w3.org/2000/svg" class="h-[15px] w-[15px] transition-transform duration-500 group-hover:rotate-45 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2"></path> <path d="M12 20v2"></path> <path d="m4.93 4.93 1.41 1.41"></path> <path d="m17.66 17.66 1.41 1.41"></path> <path d="M2 12h2"></path> <path d="M20 12h2"></path> <path d="m6.34 17.66-1.41 1.41"></path> <path d="m19.07 4.93-1.41 1.41"></path> </svg> <svg xmlns="http://www.w3.org/2000/svg" class="hidden h-[15px] w-[15px] transition-transform duration-500 group-hover:-rotate-12 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path> </svg> </button> <script>
+  (function () {
+    if (window.__themeToggleBound) return;
+    window.__themeToggleBound = true;
+    document.addEventListener('click', function (e) {
+      var target = e.target;
+      if (!(target instanceof Element)) return;
+      var btn = target.closest('#theme-toggle');
+      if (!btn) return;
+      var html = document.documentElement;
+      html.classList.add('theme-transition');
+      var current = html.getAttribute('data-theme');
+      var next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      try {
+        localStorage.setItem('theme', next);
+      } catch (err) {}
+      window.setTimeout(function () {
+        html.classList.remove('theme-transition');
+      }, 320);
+    });
+  })();
+</script> </div> </div> </header> <main id="main" class="relative mx-auto w-full max-w-content flex-1 px-screen-px pb-16">  <article class="mx-auto max-w-prose reveal"> <header class="mb-12 flex flex-col gap-5 sm:mb-16"> <div class="flex flex-wrap items-center gap-x-3 gap-y-1"> <time datetime="2026-04-24" class="meta"> April 24, 2026 </time> <span class="meta text-fg-subtle" aria-hidden="true">·</span> <span class="meta">5 min read</span>   </div> <h1 class="text-display-lg font-semibold tracking-tight text-fg"> This took longer than writing would have </h1> <p class="text-lg leading-relaxed text-fg-muted"> Why this blog has a Docker Swarm cluster behind it. </p> <div class="border-t border-border/70 pt-5"> <ul class="flex flex-wrap gap-1.5"><li><a href="/tags/meta" class="chip">Meta</a></li><li><a href="/tags/astro" class="chip">Astro</a></li><li><a href="/tags/homelab" class="chip">Homelab</a></li></ul> </div> </header> <div class="prose prose-lg max-w-none">  <p>Most new blogs open with an apology. I’m skipping it.</p>
+<p>I spent a weekend setting this up. What I ended up with: a GitHub repo, a Cloudflare tunnel, a Docker Swarm cluster, and a git-sync sidecar running on CephFS. For a blog with one post.</p>
+<h2 id="why-this-stack"><a href="#why-this-stack" class="heading-link">Why this stack</a><a href="#why-this-stack" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>A dozen static site generators can do the job. I picked this combination because:</p>
+<ul>
+<li><strong>Astro.</strong> Ships <a href="https://docs.astro.build/en/concepts/islands/">zero JavaScript by default</a>, so the page you’re reading is mostly HTML and CSS. Where I want interactivity, I can drop in React (or Vue, or Svelte) and pay for the JS only on the pages that need it.</li>
+<li><strong><a href="https://mdxjs.com/">MDX</a> with React.</strong> Markdown for writing, JSX for when an idea doesn’t fit in prose. You’ll see a couple further down.</li>
+<li><strong><a href="https://docs.github.com/en/pages">GitHub Pages</a>.</strong> Free. SSL is handled for me. The site is versioned alongside the writing. There’s no “platform fee” for a personal blog with one author.</li>
+</ul>
+<p>Everything else follows from those three.</p>
+<h2 id="themes-i-tried-before-this-one"><a href="#themes-i-tried-before-this-one" class="heading-link">Themes I tried before this one</a><a href="#themes-i-tried-before-this-one" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>I went through four attempts at agreeing with myself on what “clean modern dev blog” meant:</p>
+<ol>
+<li><strong>The original.</strong> Typography-focused, Vercel-adjacent. I thought it was too plain.</li>
+<li><strong>An editorial theme I’d called Systems Journal.</strong> Warm cream paper, oxblood accent, Fraunces display, asterism dividers. Gorgeous. Wrong site.</li>
+<li><strong>Linear-adjacent with indigo gradients.</strong> Closer, but the accent came out too purple. I know.</li>
+<li><strong>This one.</strong> <a href="https://vercel.com/font">Geist Variable</a>, a blue that’s actually blue, a soft aurora behind the hero, and a <a href="https://pagefind.app/">Pagefind</a> search you can open with <kbd class="kbd-key" data-astro-cid-6vrqdb75>⌘</kbd> <kbd class="kbd-key" data-astro-cid-6vrqdb75>K</kbd> .</li>
+</ol>
+<p>The blue:</p>
+<astro-island uid="2j3x0J" prefix="r2" component-url="/_astro/Palette.OfSqCRF8.js" component-export="Palette" renderer-url="/_astro/client.Blbc647A.js" props="{}" ssr client="visible" opts="{&quot;name&quot;:&quot;Palette&quot;,&quot;value&quot;:true}" await-children><div class="my-8 grid grid-cols-2 gap-2 sm:grid-cols-4"><button type="button" class="group flex items-center gap-2.5 rounded-lg border border-border bg-bg-raised px-3 py-2.5 text-left transition-colors hover:border-accent/50"><span class="h-7 w-7 shrink-0 rounded-md border border-border-strong" style="background:rgb(var(--bg))" aria-hidden="true"></span><span class="min-w-0 flex-1"><span class="block text-[13px] font-medium text-fg">background</span><span class="block truncate font-mono text-[11px] text-fg-muted group-hover:text-accent">var(--bg)</span></span></button><button type="button" class="group flex items-center gap-2.5 rounded-lg border border-border bg-bg-raised px-3 py-2.5 text-left transition-colors hover:border-accent/50"><span class="h-7 w-7 shrink-0 rounded-md border border-border-strong" style="background:rgb(var(--fg))" aria-hidden="true"></span><span class="min-w-0 flex-1"><span class="block text-[13px] font-medium text-fg">foreground</span><span class="block truncate font-mono text-[11px] text-fg-muted group-hover:text-accent">var(--fg)</span></span></button><button type="button" class="group flex items-center gap-2.5 rounded-lg border border-border bg-bg-raised px-3 py-2.5 text-left transition-colors hover:border-accent/50"><span class="h-7 w-7 shrink-0 rounded-md border border-border-strong" style="background:rgb(var(--accent))" aria-hidden="true"></span><span class="min-w-0 flex-1"><span class="block text-[13px] font-medium text-fg">accent</span><span class="block truncate font-mono text-[11px] text-fg-muted group-hover:text-accent">var(--accent)</span></span></button><button type="button" class="group flex items-center gap-2.5 rounded-lg border border-border bg-bg-raised px-3 py-2.5 text-left transition-colors hover:border-accent/50"><span class="h-7 w-7 shrink-0 rounded-md border border-border-strong" style="background:rgb(var(--accent-glow))" aria-hidden="true"></span><span class="min-w-0 flex-1"><span class="block text-[13px] font-medium text-fg">accent-glow</span><span class="block truncate font-mono text-[11px] text-fg-muted group-hover:text-accent">var(--accent-glow)</span></span></button></div><!--astro:end--></astro-island>
+<p>I got to each iteration by staring at the previous one for thirty seconds and deciding it was plain. If you see a fifth theme next month, you’ll know what happened.</p>
+<h2 id="the-bad-parts"><a href="#the-bad-parts" class="heading-link">The bad parts</a><a href="#the-bad-parts" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>A few stretches of this build were funny to look back on:</p>
+<ul>
+<li>I ran <code>set -a &amp;&amp; source credentials.env</code> to load some config. One value had a literal <code>!</code> in it. Bash interpreted half of it as a shell command, printed the rest into my terminal, then gave up.</li>
+<li>A GitHub Pages TLS cert sat in <code>authorization_created</code> for 90 minutes. I cycled the custom domain three times, blamed Let’s Encrypt, blamed <code>.tools</code> as a TLD, blamed a real GitHub outage that was happening at the same time, and fixed it by deleting the Pages config and starting over.</li>
+</ul>
+<p>If a Let’s Encrypt validation gets stuck on you, leave it alone for an hour. Cycling repeatedly trips a <a href="https://letsencrypt.org/docs/rate-limits/">rate limiter</a> and makes the cert even slower to issue.</p>
+<aside class="callout callout--unsourced" role="note"> <div class="callout__head"> <span class="callout__icon" aria-hidden="true">?</span> <span class="callout__title">Unsourced</span> </div> <div class="callout__body"> <p>The “delete the Pages config entirely and POST it back” workaround
+isn’t in any GitHub doc I could find. The documented fix is
+“remove and re-add the custom domain,” which did nothing for me
+across three attempts. The full-reset is more drastic but it
+worked. If there’s an official less-nuclear approach, let me know
+in the comments.</p> </div> </aside> 
+<h2 id="the-moment-i-went-too-far"><a href="#the-moment-i-went-too-far" class="heading-link">The moment I went too far</a><a href="#the-moment-i-went-too-far" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>I wanted to preview drafts remotely. The right answer was “run <code>astro dev</code> on your laptop.” What I built instead:</p>
+<ul>
+<li>One private GitHub repo holds the source.</li>
+<li>A public GitHub repo holds the built HTML, pushed from CI with a fine-grained PAT.</li>
+<li>A Docker Swarm stack on my homelab runs <code>astro dev</code> against a CephFS bind mount.</li>
+<li>A sidecar clones the private repo with a read-only SSH deploy key and runs <code>git fetch + reset</code> every three minutes.</li>
+<li>An ingress rule on my Cloudflare tunnel points a preview subdomain at Traefik. A Cloudflare Access app sits in front of that, so only I can see the preview. I can’t see it either without signing in to my self-hosted SSO first.</li>
+</ul>
+<p>Twelve minutes into that, I learned that Vite silently 403s any host not in <a href="https://vite.dev/config/server-options.html#server-allowedhosts"><code>server.allowedHosts</code></a>. The error page asks you to read <code>vite.config.js</code>. I was not reading <code>vite.config.js</code>.</p>
+<p>Switching which branch the preview tracks is now one environment variable:</p>
+<div class="expressive-code"><link rel="stylesheet" href="/_astro/ec.f7bzk.css"/><script type="module" src="/_astro/ec.8zarh.js"></script><figure class="frame"><figcaption class="header"></figcaption><pre data-language="yaml" class="wrap" style="--ecMaxLine:24ch"><code><div class="ec-line"><div class="code"><span style="--0:#85E89D;--1:#1E7734">environment</span><span style="--0:#E1E4E8;--1:#24292E">:</span></div></div><div class="ec-line" style="--ecIndent:2ch"><div class="code"><span class="indent">  </span><span style="--0:#85E89D;--1:#1E7734">SYNC_BRANCH</span><span style="--0:#E1E4E8;--1:#24292E">: </span><span style="--0:#9ECBFF;--1:#032F62">&quot;preview&quot;</span></div></div><div class="ec-line" style="--ecIndent:2ch"><div class="code"><span class="indent">  </span><span style="--0:#85E89D;--1:#1E7734">SYNC_INTERVAL</span><span style="--0:#E1E4E8;--1:#24292E">: </span><span style="--0:#9ECBFF;--1:#032F62">&quot;180&quot;</span></div></div></code></pre><div class="copy"><button title="Copy to clipboard" data-copied="Copied!" data-code="environment:  SYNC_BRANCH: &#34;preview&#34;  SYNC_INTERVAL: &#34;180&#34;"><div></div></button></div></figure></div>
+<p>Canary deployment is not yet implemented.</p>
+<h2 id="what-the-site-is"><a href="#what-the-site-is" class="heading-link">What the site is</a><a href="#what-the-site-is" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<ul>
+<li>Astro, deployed on push to <code>main</code> in the private repo. The public repo receives one <code>deploy &lt;sha&gt;</code> commit per push, and nothing else.</li>
+<li>Comments and reactions via <a href="https://giscus.app">Giscus</a>, backed by GitHub Discussions. The “likes” are the 👍 / ❤️ / 🎉 row at the top of each thread. Click one if you feel like it.</li>
+<li>Search is Pagefind, built into the deploy pipeline, opened with <kbd class="kbd-key" data-astro-cid-6vrqdb75>⌘</kbd> <kbd class="kbd-key" data-astro-cid-6vrqdb75>K</kbd> .</li>
+<li>The theme follows your OS preference with a manual override that survives reloads. The Giscus iframe re-themes to match via postMessage.</li>
+</ul>
+<p>Because MDX is JSX underneath, I can embed a real React component in any post. The thing below is one. It’s a button you can tap up to 50 times. Each tap spawns a small “+1” that floats away. There’s no server and no counter. It resets when you reload.</p>
+<style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var a=(s,i,o)=>{let r=async()=>{await(await s())()},t=typeof i.value=="object"?i.value:void 0,c={rootMargin:t==null?void 0:t.rootMargin},n=new IntersectionObserver(e=>{for(let l of e)if(l.isIntersecting){n.disconnect(),r();break}},c);for(let e of o.children)n.observe(e)};(self.Astro||(self.Astro={})).visible=a;window.dispatchEvent(new Event("astro:visible"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&&(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&&this.lastChild.nodeValue==="astro:end"&&(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&&await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="Z1Sju47" prefix="r3" component-url="/_astro/ClapButton.CVd1aS76.js" component-export="ClapButton" renderer-url="/_astro/client.Blbc647A.js" props="{}" ssr client="visible" opts="{&quot;name&quot;:&quot;ClapButton&quot;,&quot;value&quot;:true}" await-children><div class="my-8 flex items-center gap-4"><button type="button" aria-label="Clap" class="relative flex h-16 w-16 items-center justify-center rounded-full border border-border bg-bg-raised text-3xl leading-none shadow-sm transition-transform hover:scale-105 hover:border-accent/60 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"><span aria-hidden="true" class="select-none">👏</span></button><span class="font-mono text-sm text-fg-muted" aria-live="polite">tap to applaud</span></div><!--astro:end--></astro-island>
+<p>Same pattern for anything else: import at the top of the file, drop into the prose.</p>
+<h2 id="whats-next"><a href="#whats-next" class="heading-link">What’s next</a><a href="#whats-next" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>More posts. Fewer posts about the blog.</p>  </div>  <section data-pagefind-ignore="all" class="mt-20 border-t border-border/70 pt-10"> <h2 class="meta-sm mb-4 text-fg-muted">Comments &amp; reactions</h2> <div class="giscus-mount"></div> </section> <script>(function(){const mapping = "pathname";
+
+  // --- Giscus bootstrap ---------------------------------------------------
+  // Mounts the Giscus client script into .giscus-mount with the current
+  // site theme baked in (prevents flash-of-wrong-theme).
+
+  function giscusTheme() {
+    return document.documentElement.getAttribute('data-theme') === 'dark'
+      ? 'noborder_dark'
+      : 'noborder_light';
+  }
+
+  function mountGiscus() {
+    const mount = document.querySelector('.giscus-mount');
+    if (!mount) return;
+    // Already mounted? (e.g., after Astro view-transition swap)
+    if (mount.querySelector('iframe.giscus-frame, script[src*="giscus"]'))
+      return;
+
+    const s = document.createElement('script');
+    s.src = 'https://giscus.app/client.js';
+    s.dataset.repo = 'charlievogt/charlie.tools';
+    s.dataset.repoId = 'R_kgDOSKys8g';
+    s.dataset.category = 'Comments';
+    s.dataset.categoryId = 'DIC_kwDOSKys8s4C7kX3';
+    s.dataset.mapping = mapping;
+    s.dataset.strict = '0';
+    s.dataset.reactionsEnabled = '1';
+    s.dataset.emitMetadata = '0';
+    s.dataset.inputPosition = 'bottom';
+    s.dataset.theme = giscusTheme();
+    s.dataset.lang = 'en';
+    s.dataset.loading = 'lazy';
+    s.crossOrigin = 'anonymous';
+    s.async = true;
+    mount.appendChild(s);
+  }
+
+  // --- Theme sync ---------------------------------------------------------
+  function pushThemeToGiscus() {
+    const iframe = document.querySelector('iframe.giscus-frame');
+    if (!iframe || !iframe.contentWindow) return;
+    iframe.contentWindow.postMessage(
+      { giscus: { setConfig: { theme: giscusTheme() } } },
+      'https://giscus.app',
+    );
+  }
+
+  // Only bind the observer once per page session.
+  if (!window.__giscusThemeBound) {
+    window.__giscusThemeBound = true;
+    new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        if (m.attributeName === 'data-theme') {
+          pushThemeToGiscus();
+        }
+      }
+    }).observe(document.documentElement, { attributes: true });
+  }
+
+  // Mount now + on every view-transition navigation.
+  mountGiscus();
+  document.addEventListener('astro:page-load', mountGiscus);
+})();</script> </article>  </main> <footer data-pagefind-ignore="all" class="relative mt-32 border-t border-border/70"> <div class="mx-auto flex w-full max-w-content flex-col items-start justify-between gap-6 px-screen-px py-10 sm:flex-row sm:items-center"> <div class="flex items-baseline gap-3"> <span class="group text-sm inline-flex items-baseline font-semibold leading-none" style="letter-spacing: -0.025em;"> <span class="text-fg transition-colors group-hover:text-accent">charlie</span><span class="inline-block text-accent transition-transform duration-300 group-hover:-translate-y-[1px]" style="font-size: 1.15em; line-height: 1; margin: 0 0.01em;" aria-hidden="true">.</span><span class="text-fg transition-colors group-hover:text-accent">tools</span> </span> <span class="meta-sm">&copy; 2026</span> </div> <nav aria-label="Secondary"> <ul class="flex items-center gap-5"> <li> <a href="/rss.xml" class="meta transition-colors hover:text-fg">
+RSS
+</a> </li> <li> <a href="/sitemap-index.xml" class="meta transition-colors hover:text-fg">
+Sitemap
+</a> </li> <li> <a href="https://github.com/charlievogt" rel="noopener" class="meta transition-colors hover:text-fg">
+GitHub
+</a> </li> </ul> </nav> </div> </footer> <script>
+      // Heading-link / heading-anchor click handling.
+      //
+      // - Intercepts both the wrapping title link AND the # icon so we
+      //   can use history.replaceState() instead of letting the browser's
+      //   default navigation push a history entry for every section.
+      //   Result: back button returns to the page the visitor came from,
+      //   not to the previous anchor on the same page.
+      //
+      // - preventDefault here does NOT affect right-click / tap-and-hold
+      //   context menus, so the browser's native "Copy Link" menu for
+      //   the title link still works.
+      //
+      // - When the user clicks the # icon specifically, also copy the
+      //   fully-resolved URL to clipboard and flash the copied state.
+      (function () {
+        if (window.__headingLinkBound) return;
+        window.__headingLinkBound = true;
+
+        document.addEventListener('click', function (e) {
+          // Let modifier-clicks behave normally (open in new tab, etc.)
+          if (
+            e.defaultPrevented ||
+            e.button !== 0 ||
+            e.metaKey ||
+            e.ctrlKey ||
+            e.shiftKey ||
+            e.altKey
+          )
+            return;
+
+          var t = e.target;
+          if (!(t instanceof Element)) return;
+          var link = t.closest('a.heading-link, a.heading-anchor');
+          if (!link) return;
+
+          var href = link.getAttribute('href');
+          if (!href || href.charAt(0) !== '#') return;
+
+          var id = decodeURIComponent(href.slice(1));
+          var target = document.getElementById(id);
+          if (!target) return;
+
+          // Block default nav so it doesn't push a history entry
+          e.preventDefault();
+
+          // Replace the current URL so the section is shareable, but
+          // never push — anchor hopping shouldn't clutter history.
+          try {
+            history.replaceState(null, '', href);
+          } catch (_) {}
+
+          // Smooth scroll to the heading (respecting reduced motion)
+          var reduce =
+            window.matchMedia &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          target.scrollIntoView({
+            behavior: reduce ? 'auto' : 'smooth',
+            block: 'start',
+          });
+
+          // If the # icon was the thing clicked, copy + flash
+          if (link.classList.contains('heading-anchor')) {
+            var url = new URL(href, window.location.href).href;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(url).catch(function () {});
+            }
+            link.setAttribute('data-copied', 'true');
+            window.setTimeout(function () {
+              link.removeAttribute('data-copied');
+            }, 1400);
+          }
+        });
+      })();
+
+      // Smooth-scroll to the anchor when a URL with a hash is loaded.
+      // Browsers normally jump instantly on initial navigation; this
+      // intercepts, resets to the top, and then animates to the target.
+      // Respects prefers-reduced-motion.
+      (function () {
+        function smoothScrollToHash() {
+          var hash = window.location.hash;
+          if (!hash || hash.length < 2) return;
+          if (
+            window.matchMedia &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          )
+            return;
+          var id;
+          try {
+            id = decodeURIComponent(hash.slice(1));
+          } catch (_) {
+            id = hash.slice(1);
+          }
+          var target = document.getElementById(id);
+          if (!target) return;
+          // Instant reset to counteract the browser's auto-jump
+          window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+          // Smooth scroll after two frames so layout has stabilized
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+          });
+        }
+        if (!window.__hashSmoothScroll) {
+          window.__hashSmoothScroll = true;
+          if (document.readyState === 'complete') {
+            smoothScrollToHash();
+          } else {
+            window.addEventListener('load', smoothScrollToHash);
+          }
+          // Handle view-transition navigations too
+          document.addEventListener('astro:page-load', smoothScrollToHash);
+        }
+      })();
+    </script> </body> </html>

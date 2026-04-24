@@ -1,1 +1,69 @@
-<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>charlie.tools</title><description>Charlie Vogt writes about PowerShell, SPFx, Microsoft 365, and homelab infrastructure.</description><link>https://charlie.tools/</link><language>en-us</language></channel></rss>
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>charlie.tools</title><description>Charlie Vogt writes about PowerShell, SPFx, Microsoft 365, and homelab infrastructure.</description><link>https://charlie.tools/</link><language>en-us</language><item><title>This took longer than writing would have</title><link>https://charlie.tools/posts/building-this-blog/</link><guid isPermaLink="true">https://charlie.tools/posts/building-this-blog/</guid><description>Why this blog has a Docker Swarm cluster behind it.</description><pubDate>Fri, 24 Apr 2026 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;import Kbd from &apos;../../components/mdx/Kbd.astro&apos;;
+import Callout from &apos;../../components/mdx/Callout.astro&apos;;
+import { ClapButton } from &apos;../../components/mdx/ClapButton&apos;;
+import { Palette } from &apos;../../components/mdx/Palette&apos;;&lt;/p&gt;
+&lt;p&gt;Most new blogs open with an apology. I&apos;m skipping it.&lt;/p&gt;
+&lt;p&gt;I spent a weekend setting this up. What I ended up with: a GitHub repo, a Cloudflare tunnel, a Docker Swarm cluster, and a git-sync sidecar running on CephFS. For a blog with one post.&lt;/p&gt;
+&lt;h2&gt;Why this stack&lt;/h2&gt;
+&lt;p&gt;A dozen static site generators can do the job. I picked this combination because:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Astro.&lt;/strong&gt; Ships &lt;a href=&quot;https://docs.astro.build/en/concepts/islands/&quot;&gt;zero JavaScript by default&lt;/a&gt;, so the page you&apos;re reading is mostly HTML and CSS. Where I want interactivity, I can drop in React (or Vue, or Svelte) and pay for the JS only on the pages that need it.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&quot;https://mdxjs.com/&quot;&gt;MDX&lt;/a&gt; with React.&lt;/strong&gt; Markdown for writing, JSX for when an idea doesn&apos;t fit in prose. You&apos;ll see a couple further down.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&quot;https://docs.github.com/en/pages&quot;&gt;GitHub Pages&lt;/a&gt;.&lt;/strong&gt; Free. SSL is handled for me. The site is versioned alongside the writing. There&apos;s no &quot;platform fee&quot; for a personal blog with one author.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Everything else follows from those three.&lt;/p&gt;
+&lt;h2&gt;Themes I tried before this one&lt;/h2&gt;
+&lt;p&gt;I went through four attempts at agreeing with myself on what &quot;clean modern dev blog&quot; meant:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;The original.&lt;/strong&gt; Typography-focused, Vercel-adjacent. I thought it was too plain.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;An editorial theme I&apos;d called Systems Journal.&lt;/strong&gt; Warm cream paper, oxblood accent, Fraunces display, asterism dividers. Gorgeous. Wrong site.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Linear-adjacent with indigo gradients.&lt;/strong&gt; Closer, but the accent came out too purple. I know.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;This one.&lt;/strong&gt; &lt;a href=&quot;https://vercel.com/font&quot;&gt;Geist Variable&lt;/a&gt;, a blue that&apos;s actually blue, a soft aurora behind the hero, and a &lt;a href=&quot;https://pagefind.app/&quot;&gt;Pagefind&lt;/a&gt; search you can open with &lt;kbd&gt;⌘&lt;/kbd&gt;&lt;kbd&gt;K&lt;/kbd&gt;.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;The blue:&lt;/p&gt;
+
+&lt;p&gt;I got to each iteration by staring at the previous one for thirty seconds and deciding it was plain. If you see a fifth theme next month, you&apos;ll know what happened.&lt;/p&gt;
+&lt;h2&gt;The bad parts&lt;/h2&gt;
+&lt;p&gt;A few stretches of this build were funny to look back on:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;I ran &lt;code&gt;set -a &amp;amp;&amp;amp; source credentials.env&lt;/code&gt; to load some config. One value had a literal &lt;code&gt;!&lt;/code&gt; in it. Bash interpreted half of it as a shell command, printed the rest into my terminal, then gave up.&lt;/li&gt;
+&lt;li&gt;A GitHub Pages TLS cert sat in &lt;code&gt;authorization_created&lt;/code&gt; for 90 minutes. I cycled the custom domain three times, blamed Let&apos;s Encrypt, blamed &lt;code&gt;.tools&lt;/code&gt; as a TLD, blamed a real GitHub outage that was happening at the same time, and fixed it by deleting the Pages config and starting over.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;If a Let&apos;s Encrypt validation gets stuck on you, leave it alone for an hour. Cycling repeatedly trips a &lt;a href=&quot;https://letsencrypt.org/docs/rate-limits/&quot;&gt;rate limiter&lt;/a&gt; and makes the cert even slower to issue.&lt;/p&gt;
+
+The &quot;delete the Pages config entirely and POST it back&quot; workaround
+isn&apos;t in any GitHub doc I could find. The documented fix is
+&quot;remove and re-add the custom domain,&quot; which did nothing for me
+across three attempts. The full-reset is more drastic but it
+worked. If there&apos;s an official less-nuclear approach, let me know
+in the comments.
+
+&lt;h2&gt;The moment I went too far&lt;/h2&gt;
+&lt;p&gt;I wanted to preview drafts remotely. The right answer was &quot;run &lt;code&gt;astro dev&lt;/code&gt; on your laptop.&quot; What I built instead:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;One private GitHub repo holds the source.&lt;/li&gt;
+&lt;li&gt;A public GitHub repo holds the built HTML, pushed from CI with a fine-grained PAT.&lt;/li&gt;
+&lt;li&gt;A Docker Swarm stack on my homelab runs &lt;code&gt;astro dev&lt;/code&gt; against a CephFS bind mount.&lt;/li&gt;
+&lt;li&gt;A sidecar clones the private repo with a read-only SSH deploy key and runs &lt;code&gt;git fetch + reset&lt;/code&gt; every three minutes.&lt;/li&gt;
+&lt;li&gt;An ingress rule on my Cloudflare tunnel points a preview subdomain at Traefik. A Cloudflare Access app sits in front of that, so only I can see the preview. I can&apos;t see it either without signing in to my self-hosted SSO first.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Twelve minutes into that, I learned that Vite silently 403s any host not in &lt;a href=&quot;https://vite.dev/config/server-options.html#server-allowedhosts&quot;&gt;&lt;code&gt;server.allowedHosts&lt;/code&gt;&lt;/a&gt;. The error page asks you to read &lt;code&gt;vite.config.js&lt;/code&gt;. I was not reading &lt;code&gt;vite.config.js&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Switching which branch the preview tracks is now one environment variable:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-yaml&quot;&gt;environment:
+  SYNC_BRANCH: &quot;preview&quot;
+  SYNC_INTERVAL: &quot;180&quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Canary deployment is not yet implemented.&lt;/p&gt;
+&lt;h2&gt;What the site is&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Astro, deployed on push to &lt;code&gt;main&lt;/code&gt; in the private repo. The public repo receives one &lt;code&gt;deploy &amp;lt;sha&amp;gt;&lt;/code&gt; commit per push, and nothing else.&lt;/li&gt;
+&lt;li&gt;Comments and reactions via &lt;a href=&quot;https://giscus.app&quot;&gt;Giscus&lt;/a&gt;, backed by GitHub Discussions. The &quot;likes&quot; are the 👍 / ❤️ / 🎉 row at the top of each thread. Click one if you feel like it.&lt;/li&gt;
+&lt;li&gt;Search is Pagefind, built into the deploy pipeline, opened with &lt;kbd&gt;⌘&lt;/kbd&gt;&lt;kbd&gt;K&lt;/kbd&gt;.&lt;/li&gt;
+&lt;li&gt;The theme follows your OS preference with a manual override that survives reloads. The Giscus iframe re-themes to match via postMessage.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Because MDX is JSX underneath, I can embed a real React component in any post. The thing below is one. It&apos;s a button you can tap up to 50 times. Each tap spawns a small &quot;+1&quot; that floats away. There&apos;s no server and no counter. It resets when you reload.&lt;/p&gt;
+
+&lt;p&gt;Same pattern for anything else: import at the top of the file, drop into the prose.&lt;/p&gt;
+&lt;h2&gt;What&apos;s next&lt;/h2&gt;
+&lt;p&gt;More posts. Fewer posts about the blog.&lt;/p&gt;
+</content:encoded><category>Meta</category><category>Astro</category><category>Homelab</category></item></channel></rss>
