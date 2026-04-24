@@ -16,7 +16,7 @@
       document.documentElement.setAttribute('data-theme', 'light');
     }
   })();
-</script><!-- Canonical & favicons --><link rel="canonical" href="https://charlie.tools/404/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="sitemap" href="/sitemap-index.xml"><link rel="alternate" type="application/rss+xml" title="charlie.tools" href="https://charlie.tools/rss.xml"><!-- Primary meta --><title>404 — Not found — charlie.tools</title><meta name="title" content="404 — Not found — charlie.tools"><meta name="description" content="That page doesn't exist."><meta name="author" content="Charlie Vogt"><!-- Open Graph --><meta property="og:type" content="website"><meta property="og:url" content="https://charlie.tools/404/"><meta property="og:title" content="404 — Not found — charlie.tools"><meta property="og:description" content="That page doesn't exist."><meta property="og:image" content="https://charlie.tools/og-default.png"><meta property="og:site_name" content="charlie.tools"><!-- Twitter --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:url" content="https://charlie.tools/404/"><meta name="twitter:title" content="404 — Not found — charlie.tools"><meta name="twitter:description" content="That page doesn't exist."><meta name="twitter:image" content="https://charlie.tools/og-default.png"><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.BFfqj1ee.js"></script><link rel="stylesheet" href="/_astro/_slug_.CmbvpENp.css"><script type="module" src="/_astro/page.IvKoM_B8.js"></script></head> <body class="flex min-h-svh flex-col"> <header data-pagefind-ignore="all" class="fixed inset-x-0 top-0 z-40 border-b border-border/70 bg-bg/75 backdrop-blur-xl supports-[backdrop-filter]:bg-bg/60"> <div class="mx-auto flex h-14 w-full max-w-content items-center justify-between gap-4 px-screen-px"> <!-- Brand --> <a href="/" class="inline-flex items-center" aria-label="charlie.tools — home"> <span class="group text-lg inline-flex items-baseline font-semibold leading-none" style="letter-spacing: -0.025em;"> <span class="text-fg transition-colors group-hover:text-accent">charlie</span><span class="inline-block text-accent transition-transform duration-300 group-hover:-translate-y-[1px]" style="font-size: 1.15em; line-height: 1; margin: 0 0.01em;" aria-hidden="true">.</span><span class="text-fg transition-colors group-hover:text-accent">tools</span> </span> </a> <!-- Nav + toggle --> <div class="flex items-center gap-1"> <nav aria-label="Primary" class="flex items-center"> <ul class="flex items-center"> <li> <a href="/posts" class="relative rounded-md px-3 py-1.5 text-sm transition-colors text-fg-muted hover:text-fg"> Posts  </a> </li><li> <a href="/tags" class="relative rounded-md px-3 py-1.5 text-sm transition-colors text-fg-muted hover:text-fg"> Tags  </a> </li><li> <a href="/about" class="relative rounded-md px-3 py-1.5 text-sm transition-colors text-fg-muted hover:text-fg"> About  </a> </li> </ul> </nav> <div class="mx-1.5 h-4 w-px bg-border-strong/70" aria-hidden="true"></div> <button type="button" id="search-trigger" aria-label="Open search" class="group inline-flex h-9 items-center gap-2.5 rounded-lg border border-border bg-bg-raised pl-3 pr-3.5 text-[0.875rem] text-fg-muted transition-colors hover:border-accent/50 hover:bg-bg hover:text-fg"> <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <circle cx="11" cy="11" r="7"></circle> <path d="m20 20-3.5-3.5"></path> </svg> <span>Search</span> </button> <dialog id="search-dialog" aria-label="Search posts" class="search-dialog"> <div class="search-header"> <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="search-header__icon"> <circle cx="11" cy="11" r="7"></circle> <path d="m20 20-3.5-3.5"></path> </svg> <input id="search-input" type="text" placeholder="Search…" autocomplete="off" spellcheck="false" aria-label="Search query" class="search-header__input"> </div> <div id="search-results" class="search-results" aria-live="polite"></div> </dialog>  <script type="module">let n=null,d=!1;async function g(){if(!(n||d)){d=!0;try{n=await new Function("url","return import(/* @vite-ignore */ url)")("/pagefind/pagefind.js"),n&&typeof n.init=="function"&&await n.init()}catch(e){console.warn("[search] pagefind index unavailable",e);const t=document.getElementById("search-results");t&&(t.innerHTML='<div class="search-empty">Search index is generated at build time — it goes live with the next deploy.</div>')}finally{d=!1}}}function u(e){return(e||"").replace(/[&<>"']/g,t=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[t])}function m(){const e=document.getElementById("search-dialog"),t=document.getElementById("search-trigger"),o=document.getElementById("search-input"),a=document.getElementById("search-results");if(!e||!t||!o||!a||t.__bound)return;t.__bound=!0;const s='<div class="search-empty">Type to search posts.</div>';a.innerHTML=s;const h=()=>{e.open||(e.showModal(),o.value="",a.innerHTML=s,o.focus(),g())},p=()=>{e.open&&e.close()};t.addEventListener("click",h),e.addEventListener("click",i=>{if(!e.open)return;const c=e.getBoundingClientRect();(i.clientY<c.top||i.clientY>c.bottom||i.clientX<c.left||i.clientX>c.right)&&p()});let f;o.addEventListener("input",()=>{clearTimeout(f);const i=o.value.trim();if(!i){a.innerHTML=s;return}f=window.setTimeout(async()=>{if(n||await g(),!n||typeof n.search!="function")return;const c=await n.search(i),l=await Promise.all(c.results.slice(0,8).map(r=>r.data()));if(l.length===0){a.innerHTML='<div class="search-empty">No matches for <strong style="color: rgb(var(--fg)); font-weight: 500">'+u(i)+"</strong>.</div>";return}a.innerHTML=l.map(r=>`
+</script><!-- Canonical & favicons --><link rel="canonical" href="https://charlie.tools/404/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="sitemap" href="/sitemap-index.xml"><link rel="alternate" type="application/rss+xml" title="charlie.tools" href="https://charlie.tools/rss.xml"><!-- Primary meta --><title>404 — Not found — charlie.tools</title><meta name="title" content="404 — Not found — charlie.tools"><meta name="description" content="That page doesn't exist."><meta name="author" content="Charlie Vogt"><!-- Open Graph --><meta property="og:type" content="website"><meta property="og:url" content="https://charlie.tools/404/"><meta property="og:title" content="404 — Not found — charlie.tools"><meta property="og:description" content="That page doesn't exist."><meta property="og:image" content="https://charlie.tools/og-default.png"><meta property="og:site_name" content="charlie.tools"><!-- Twitter --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:url" content="https://charlie.tools/404/"><meta name="twitter:title" content="404 — Not found — charlie.tools"><meta name="twitter:description" content="That page doesn't exist."><meta name="twitter:image" content="https://charlie.tools/og-default.png"><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.BFfqj1ee.js"></script><link rel="stylesheet" href="/_astro/_slug_.BjNd1ptO.css"><script type="module" src="/_astro/page.IvKoM_B8.js"></script></head> <body class="flex min-h-svh flex-col"> <header data-pagefind-ignore="all" class="fixed inset-x-0 top-0 z-40 border-b border-border/70 bg-bg/75 backdrop-blur-xl supports-[backdrop-filter]:bg-bg/60"> <div class="mx-auto flex h-14 w-full max-w-content items-center justify-between gap-4 px-screen-px"> <!-- Brand --> <a href="/" class="inline-flex items-center" aria-label="charlie.tools — home"> <span class="group text-lg inline-flex items-baseline font-semibold leading-none" style="letter-spacing: -0.025em;"> <span class="text-fg transition-colors group-hover:text-accent">charlie</span><span class="inline-block text-accent transition-transform duration-300 group-hover:-translate-y-[1px]" style="font-size: 1.15em; line-height: 1; margin: 0 0.01em;" aria-hidden="true">.</span><span class="text-fg transition-colors group-hover:text-accent">tools</span> </span> </a> <!-- Nav + toggle --> <div class="flex items-center gap-1"> <nav aria-label="Primary" class="flex items-center"> <ul class="flex items-center"> <li> <a href="/posts" class="relative rounded-md px-3 py-1.5 text-sm transition-colors text-fg-muted hover:text-fg"> Posts  </a> </li><li> <a href="/tags" class="relative rounded-md px-3 py-1.5 text-sm transition-colors text-fg-muted hover:text-fg"> Tags  </a> </li><li> <a href="/about" class="relative rounded-md px-3 py-1.5 text-sm transition-colors text-fg-muted hover:text-fg"> About  </a> </li> </ul> </nav> <div class="mx-1.5 h-4 w-px bg-border-strong/70" aria-hidden="true"></div> <button type="button" id="search-trigger" aria-label="Open search" class="group inline-flex h-9 items-center gap-2.5 rounded-lg border border-border bg-bg-raised pl-3 pr-3.5 text-[0.875rem] text-fg-muted transition-colors hover:border-accent/50 hover:bg-bg hover:text-fg"> <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <circle cx="11" cy="11" r="7"></circle> <path d="m20 20-3.5-3.5"></path> </svg> <span>Search</span> </button> <dialog id="search-dialog" aria-label="Search posts" class="search-dialog"> <div class="search-header"> <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="search-header__icon"> <circle cx="11" cy="11" r="7"></circle> <path d="m20 20-3.5-3.5"></path> </svg> <input id="search-input" type="text" placeholder="Search…" autocomplete="off" spellcheck="false" aria-label="Search query" class="search-header__input"> </div> <div id="search-results" class="search-results" aria-live="polite"></div> </dialog>  <script type="module">let n=null,d=!1;async function g(){if(!(n||d)){d=!0;try{n=await new Function("url","return import(/* @vite-ignore */ url)")("/pagefind/pagefind.js"),n&&typeof n.init=="function"&&await n.init()}catch(e){console.warn("[search] pagefind index unavailable",e);const t=document.getElementById("search-results");t&&(t.innerHTML='<div class="search-empty">Search index is generated at build time — it goes live with the next deploy.</div>')}finally{d=!1}}}function u(e){return(e||"").replace(/[&<>"']/g,t=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[t])}function m(){const e=document.getElementById("search-dialog"),t=document.getElementById("search-trigger"),o=document.getElementById("search-input"),a=document.getElementById("search-results");if(!e||!t||!o||!a||t.__bound)return;t.__bound=!0;const s='<div class="search-empty">Type to search posts.</div>';a.innerHTML=s;const h=()=>{e.open||(e.showModal(),o.value="",a.innerHTML=s,o.focus(),g())},p=()=>{e.open&&e.close()};t.addEventListener("click",h),e.addEventListener("click",i=>{if(!e.open)return;const c=e.getBoundingClientRect();(i.clientY<c.top||i.clientY>c.bottom||i.clientX<c.left||i.clientX>c.right)&&p()});let f;o.addEventListener("input",()=>{clearTimeout(f);const i=o.value.trim();if(!i){a.innerHTML=s;return}f=window.setTimeout(async()=>{if(n||await g(),!n||typeof n.search!="function")return;const c=await n.search(i),l=await Promise.all(c.results.slice(0,8).map(r=>r.data()));if(l.length===0){a.innerHTML='<div class="search-empty">No matches for <strong style="color: rgb(var(--fg)); font-weight: 500">'+u(i)+"</strong>.</div>";return}a.innerHTML=l.map(r=>`
             <a href="${u(r.url)}">
               <div class="search-results__title">${u(r.meta?.title||r.url)}</div>
               ${r.excerpt?`<div class="search-results__excerpt">${r.excerpt}</div>`:""}
@@ -57,4 +57,69 @@ RSS
 Sitemap
 </a> </li> <li> <a href="https://github.com/charlievogt" rel="noopener" class="meta transition-colors hover:text-fg">
 GitHub
-</a> </li> </ul> </nav> </div> </footer> </body></html>
+</a> </li> </ul> </nav> </div> </footer> <script>
+      // Copy full URL (including hash) to clipboard when a heading anchor
+      // is clicked, and flash a brief "copied" indicator next to it.
+      (function () {
+        if (window.__headingAnchorBound) return;
+        window.__headingAnchorBound = true;
+        document.addEventListener('click', function (e) {
+          var target = e.target;
+          if (!(target instanceof Element)) return;
+          var a = target.closest('a.heading-anchor');
+          if (!a) return;
+          var href = a.getAttribute('href');
+          if (!href) return;
+          var url = new URL(href, window.location.href).href;
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).catch(function () {});
+          }
+          a.setAttribute('data-copied', 'true');
+          window.setTimeout(function () {
+            a.removeAttribute('data-copied');
+          }, 1400);
+        });
+      })();
+
+      // Smooth-scroll to the anchor when a URL with a hash is loaded.
+      // Browsers normally jump instantly on initial navigation; this
+      // intercepts, resets to the top, and then animates to the target.
+      // Respects prefers-reduced-motion.
+      (function () {
+        function smoothScrollToHash() {
+          var hash = window.location.hash;
+          if (!hash || hash.length < 2) return;
+          if (
+            window.matchMedia &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          )
+            return;
+          var id;
+          try {
+            id = decodeURIComponent(hash.slice(1));
+          } catch (_) {
+            id = hash.slice(1);
+          }
+          var target = document.getElementById(id);
+          if (!target) return;
+          // Instant reset to counteract the browser's auto-jump
+          window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+          // Smooth scroll after two frames so layout has stabilized
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+          });
+        }
+        if (!window.__hashSmoothScroll) {
+          window.__hashSmoothScroll = true;
+          if (document.readyState === 'complete') {
+            smoothScrollToHash();
+          } else {
+            window.addEventListener('load', smoothScrollToHash);
+          }
+          // Handle view-transition navigations too
+          document.addEventListener('astro:page-load', smoothScrollToHash);
+        }
+      })();
+    </script> </body> </html>
