@@ -1,0 +1,360 @@
+<!DOCTYPE html><html lang="en"> <head><!-- Charset, viewport, theme --><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="Astro v5.18.1"><meta name="color-scheme" content="light dark"><!-- Run before first paint to avoid flash of wrong theme. Re-runs on
+     every Astro view-transition navigation so the theme attribute is
+     reasserted onto the live document. --><script data-astro-rerun>
+  (function () {
+    try {
+      var stored = localStorage.getItem('theme');
+      var prefersDark = window.matchMedia(
+        '(prefers-color-scheme: dark)',
+      ).matches;
+      var theme =
+        stored === 'dark' || stored === 'light'
+          ? stored
+          : prefersDark
+            ? 'dark'
+            : 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    } catch (e) {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  })();
+</script><!-- Carry the current theme onto the incoming document before Astro's
+     ClientRouter swaps it in, so view-transition navigation can't show
+     a flash of the wrong theme between pages. --><script>
+  (function () {
+    if (window.__charlieThemePersistBound) return;
+    window.__charlieThemePersistBound = true;
+    document.addEventListener('astro:before-swap', function (e) {
+      var current = document.documentElement.getAttribute('data-theme');
+      if (current && e && e.newDocument) {
+        e.newDocument.documentElement.setAttribute('data-theme', current);
+      }
+    });
+  })();
+</script><!-- Canonical & favicons --><link rel="canonical" href="https://charlie.tools/posts/oauth-server-before-this-post/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="sitemap" href="/sitemap-index.xml"><link rel="alternate" type="application/rss+xml" title="charlie.tools" href="https://charlie.tools/rss.xml"><!-- Primary meta --><title>I wrote an OAuth server before I wrote this post — charlie.tools</title><meta name="title" content="I wrote an OAuth server before I wrote this post — charlie.tools"><meta name="description" content="Setting up a personal MCP server. The first tool was easy. The auth was not."><meta name="author" content="Charlie Vogt"><meta name="keywords" content="Homelab, OAuth, MCP"><!-- Open Graph --><meta property="og:type" content="article"><meta property="og:url" content="https://charlie.tools/posts/oauth-server-before-this-post/"><meta property="og:title" content="I wrote an OAuth server before I wrote this post — charlie.tools"><meta property="og:description" content="Setting up a personal MCP server. The first tool was easy. The auth was not."><meta property="og:image" content="https://charlie.tools/og-default.png"><meta property="og:site_name" content="charlie.tools"><meta property="article:published_time" content="2026-04-27T00:00:00.000Z"><meta property="article:tag" content="Homelab"><meta property="article:tag" content="OAuth"><meta property="article:tag" content="MCP"><!-- Twitter --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:url" content="https://charlie.tools/posts/oauth-server-before-this-post/"><meta name="twitter:title" content="I wrote an OAuth server before I wrote this post — charlie.tools"><meta name="twitter:description" content="Setting up a personal MCP server. The first tool was easy. The auth was not."><meta name="twitter:image" content="https://charlie.tools/og-default.png"><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.BFfqj1ee.js"></script><link rel="stylesheet" href="/_astro/_slug_.1y6hjWZe.css"><script type="module" src="/_astro/page.IvKoM_B8.js"></script></head> <body class="flex min-h-svh flex-col"> <header data-pagefind-ignore="all" class="fixed inset-x-0 top-0 z-40 border-b border-border/70 bg-bg/75 backdrop-blur-xl supports-[backdrop-filter]:bg-bg/60"> <div class="mx-auto flex h-14 w-full max-w-content items-center justify-between gap-4 px-screen-px"> <!-- Brand --> <a href="/" class="inline-flex items-center" aria-label="charlie.tools — home"> <span class="group text-lg inline-flex items-baseline font-semibold leading-none" style="letter-spacing: -0.025em;"> <span class="text-fg transition-colors group-hover:text-accent">charlie</span><span class="inline-block text-accent transition-transform duration-300 group-hover:-translate-y-[1px]" style="font-size: 1.15em; line-height: 1; margin: 0 0.01em;" aria-hidden="true">.</span><span class="text-fg transition-colors group-hover:text-accent">tools</span> </span> </a> <!-- Nav + toggle --> <div class="flex items-center gap-1"> <nav aria-label="Primary" class="flex items-center"> <ul class="flex items-center"> <li> <a href="/posts" class="relative rounded-md px-3 py-1.5 text-sm transition-colors text-fg" aria-current="page"> Posts <span class="absolute inset-x-3 -bottom-[13px] h-px bg-accent" aria-hidden="true"></span> </a> </li><li> <a href="/tags" class="relative rounded-md px-3 py-1.5 text-sm transition-colors text-fg-muted hover:text-fg"> Tags  </a> </li><li> <a href="/about" class="relative rounded-md px-3 py-1.5 text-sm transition-colors text-fg-muted hover:text-fg"> About  </a> </li> </ul> </nav> <div class="mx-1.5 h-4 w-px bg-border-strong/70" aria-hidden="true"></div> <button type="button" id="search-trigger" aria-label="Open search" class="group inline-flex h-9 items-center gap-2.5 rounded-lg border border-border bg-bg-raised pl-3 pr-3.5 text-[0.875rem] text-fg-muted transition-colors hover:border-accent/50 hover:bg-bg hover:text-fg"> <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <circle cx="11" cy="11" r="7"></circle> <path d="m20 20-3.5-3.5"></path> </svg> <span>Search</span> </button> <dialog id="search-dialog" aria-label="Search posts" class="search-dialog"> <div class="search-header"> <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="search-header__icon"> <circle cx="11" cy="11" r="7"></circle> <path d="m20 20-3.5-3.5"></path> </svg> <input id="search-input" type="text" placeholder="Search…" autocomplete="off" spellcheck="false" aria-label="Search query" class="search-header__input"> </div> <div id="search-results" class="search-results" aria-live="polite"></div> </dialog>  <script type="module">let n=null,d=!1;async function g(){if(!(n||d)){d=!0;try{n=await new Function("url","return import(/* @vite-ignore */ url)")("/pagefind/pagefind.js"),n&&typeof n.init=="function"&&await n.init()}catch(e){console.warn("[search] pagefind index unavailable",e);const t=document.getElementById("search-results");t&&(t.innerHTML='<div class="search-empty">Search index is generated at build time — it goes live with the next deploy.</div>')}finally{d=!1}}}function u(e){return(e||"").replace(/[&<>"']/g,t=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[t])}function m(){const e=document.getElementById("search-dialog"),t=document.getElementById("search-trigger"),o=document.getElementById("search-input"),a=document.getElementById("search-results");if(!e||!t||!o||!a||t.__bound)return;t.__bound=!0;const s='<div class="search-empty">Type to search posts.</div>';a.innerHTML=s;const h=()=>{e.open||(e.showModal(),o.value="",a.innerHTML=s,o.focus(),g())},p=()=>{e.open&&e.close()};t.addEventListener("click",h),e.addEventListener("click",i=>{if(!e.open)return;const c=e.getBoundingClientRect();(i.clientY<c.top||i.clientY>c.bottom||i.clientX<c.left||i.clientX>c.right)&&p()});let f;o.addEventListener("input",()=>{clearTimeout(f);const i=o.value.trim();if(!i){a.innerHTML=s;return}f=window.setTimeout(async()=>{if(n||await g(),!n||typeof n.search!="function")return;const c=await n.search(i),l=await Promise.all(c.results.slice(0,8).map(r=>r.data()));if(l.length===0){a.innerHTML='<div class="search-empty">No matches for <strong style="color: rgb(var(--fg)); font-weight: 500">'+u(i)+"</strong>.</div>";return}a.innerHTML=l.map(r=>`
+            <a href="${u(r.url)}">
+              <div class="search-results__title">${u(r.meta?.title||r.url)}</div>
+              ${r.excerpt?`<div class="search-results__excerpt">${r.excerpt}</div>`:""}
+            </a>`).join("")},120)})}function y(){window.__searchShortcut||(window.__searchShortcut=!0,document.addEventListener("keydown",e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();const t=document.getElementById("search-dialog");if(!t)return;t.open?t.close():document.getElementById("search-trigger")?.click()}}))}m();y();document.addEventListener("astro:page-load",m);</script> <div class="mx-1.5 h-4 w-px bg-border-strong/70" aria-hidden="true"></div> <button type="button" id="theme-toggle" aria-label="Toggle color theme" class="group inline-flex h-8 w-8 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-bg-raised hover:text-fg"> <svg xmlns="http://www.w3.org/2000/svg" class="h-[15px] w-[15px] transition-transform duration-500 group-hover:rotate-45 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2"></path> <path d="M12 20v2"></path> <path d="m4.93 4.93 1.41 1.41"></path> <path d="m17.66 17.66 1.41 1.41"></path> <path d="M2 12h2"></path> <path d="M20 12h2"></path> <path d="m6.34 17.66-1.41 1.41"></path> <path d="m19.07 4.93-1.41 1.41"></path> </svg> <svg xmlns="http://www.w3.org/2000/svg" class="hidden h-[15px] w-[15px] transition-transform duration-500 group-hover:-rotate-12 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path> </svg> </button> <script>
+  (function () {
+    if (window.__themeToggleBound) return;
+    window.__themeToggleBound = true;
+    document.addEventListener('click', function (e) {
+      var target = e.target;
+      if (!(target instanceof Element)) return;
+      var btn = target.closest('#theme-toggle');
+      if (!btn) return;
+      var html = document.documentElement;
+      html.classList.add('theme-transition');
+      var current = html.getAttribute('data-theme');
+      var next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      try {
+        localStorage.setItem('theme', next);
+      } catch (err) {}
+      window.setTimeout(function () {
+        html.classList.remove('theme-transition');
+      }, 320);
+    });
+  })();
+</script> </div> </div> </header> <main id="main" class="relative mx-auto w-full max-w-content flex-1 px-screen-px pb-16">  <article class="mx-auto max-w-prose reveal"> <header class="mb-12 flex flex-col gap-5 sm:mb-16"> <div class="flex flex-wrap items-center gap-x-3 gap-y-1"> <time datetime="2026-04-27" class="meta"> April 27, 2026 </time> <span class="meta text-fg-subtle" aria-hidden="true">·</span> <span class="meta">5 min read</span>   </div> <h1 class="text-display-lg font-semibold tracking-tight text-fg"> I wrote an OAuth server before I wrote this post </h1> <p class="text-lg leading-relaxed text-fg-muted"> Setting up a personal MCP server. The first tool was easy. The auth was not. </p> <div class="border-t border-border/70 pt-5"> <ul class="flex flex-wrap gap-1.5"><li><a href="/tags/homelab" class="chip">Homelab</a></li><li><a href="/tags/oauth" class="chip">OAuth</a></li><li><a href="/tags/mcp" class="chip">MCP</a></li></ul> </div> </header> <div class="prose prose-lg max-w-none">  <p>I wanted Claude Code on every machine I work from to share one set of tools, and I wanted those tools available from my phone too. Claude Code skills live on disk, so every laptop I use needs its own copy. claude.ai skills live in your account, uploaded separately. Two copies of the same logic, drifting from the moment I edit one. Felt wrong the moment I typed it.</p>
+<p>The right answer is a small server that speaks the <a href="https://modelcontextprotocol.io/">Model Context Protocol</a>. Both clients connect to the same URL, both call the same tools, no copying.</p>
+<p>I picked the smallest plausible stack: TypeScript with the <a href="https://github.com/modelcontextprotocol/typescript-sdk">official MCP SDK</a>, Express, Docker, deployed as a single replica on the Swarm cluster I already had running. The first version exposed a <code>commit_blog_draft</code> tool that creates a <code>draft/&lt;slug&gt;</code> branch in the blog’s source repo and writes an MDX file. End to end, maybe an hour of writing code.</p>
+<p>The auth, though.</p>
+<h2 id="what-claudeais-connector-form-actually-wants"><a href="#what-claudeais-connector-form-actually-wants" class="heading-link">What claude.ai’s connector form actually wants</a><a href="#what-claudeais-connector-form-actually-wants" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>claude.ai has a UI for adding custom MCP connectors. The form has four fields: name, URL, optional OAuth Client ID, optional OAuth Client Secret. I read “optional” and assumed I could skip OAuth, ship a static bearer token, and be done.</p>
+<p>I was wrong about “optional.” claude.ai requires <a href="https://datatracker.ietf.org/doc/html/rfc7591">OAuth 2.0 with Dynamic Client Registration</a> (RFC 7591), every time. The “optional” fields are there for the case where the server has a pre-registered application and the user pastes its credentials. If both are empty, claude.ai DCRs against the server. If the server does not support DCR, the form rejects you with a vague “couldn’t reach the MCP server” message.</p>
+<p>My homelab’s identity provider, <a href="https://www.authelia.com/">Authelia</a>, is great. But it does not speak DCR. Clients have to be registered ahead of time in a YAML file. claude.ai is not going to commit to my homelab repo.</p>
+<p>Two real choices:</p>
+<ul>
+<li>Front the MCP server with a Cloudflare Worker that does the OAuth dance and forwards traffic. Possible. Adds a runtime I do not otherwise have.</li>
+<li>Build a small OAuth authorization server into the MCP server itself. More code in one place, no new infrastructure.</li>
+</ul>
+<p>I picked the second one. <a href="https://github.com/panva/node-oidc-provider"><code>node-oidc-provider</code></a> is a battle-tested OIDC implementation with DCR support already wired up. Hand it a JWKS, hand it cookie keys, hand it a “find me a user by ID” callback, and it does the rest.</p>
+<p>Until you try to run it.</p>
+<h2 id="five-things-that-broke-before-it-worked"><a href="#five-things-that-broke-before-it-worked" class="heading-link">Five things that broke before it worked</a><a href="#five-things-that-broke-before-it-worked" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<ol>
+<li>
+<p><strong>DCR returned 400 because I had allowed too few grant types.</strong> claude.ai’s registration payload asks for <code>grant_types: [&quot;authorization_code&quot;, &quot;refresh_token&quot;]</code>. My provider only advertised <code>authorization_code</code>. Refresh tokens require enabling the <code>offline_access</code> scope, which I had skipped on the (incorrect) assumption that I would never need refresh. One config line.</p>
+</li>
+<li>
+<p><strong>Login worked, consent crashed.</strong> After the password form, the provider tried to ask the user to consent to the requested scopes. Single-user server, no point asking. I had wired up <code>loadExistingGrant</code> to auto-grant, but only for a hardcoded scope list that did not include <code>offline_access</code>. The flow hit my unimplemented consent handler and returned a 501 with the message “Unsupported prompt: consent.” Visible to the user. Embarrassing.</p>
+</li>
+<li>
+<p><strong>Token exchange returned 200. Every MCP request after it returned 401.</strong> I was validating access tokens with <code>provider.AccessToken.find(token)</code>, which the docs do say is the right call. It is, for opaque tokens. I had configured access tokens as JWTs so they could be validated without a database round-trip, and <code>find()</code> searches by JTI, not by the JWT string. Switched to <code>jose.jwtVerify</code> against the JWKS and it lit up.</p>
+</li>
+<li>
+<p><strong>claude.ai sends MCP traffic to <code>/</code>, not the URL the user pastes.</strong> After the OAuth dance completes, claude.ai derives the MCP endpoint from the OAuth issuer. The issuer was <code>https://mcp.example/</code>, so claude.ai started POSTing to <code>https://mcp.example/</code>, ignoring the <code>/mcp</code> path on the connector. Mounted the same handlers at both. Belt and suspenders.</p>
+</li>
+<li>
+<p><strong>Every redeploy nuked claude.ai’s session.</strong> <code>node-oidc-provider</code> ships with an in-memory adapter as a “quick start.” It logs a warning on boot. I read the warning, decided I would deal with it later, and was promptly punished with a “delete and re-add the connector” tax on every code change. Plugged the provider into <a href="https://github.com/redis/ioredis"><code>ioredis</code></a> against the Redis instance I was already running for other things, and the tax went away.</p>
+</li>
+</ol>
+<p>Each one took maybe twenty minutes to find, two minutes to fix. Cumulative time looking at OAuth specs and oidc-provider source code: most of an afternoon.</p>
+<h2 id="whats-on-the-server-now"><a href="#whats-on-the-server-now" class="heading-link">What’s on the server now</a><a href="#whats-on-the-server-now" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Two tools:</p>
+<ul>
+<li><code>get_voice_guide</code> returns the editorial rules for this blog.</li>
+<li><code>commit_blog_draft</code> takes a slug, title, description, tags, and a markdown body, then opens a draft branch on GitHub. This post was committed by it.</li>
+</ul>
+<p>Plus one Claude Code specific <a href="https://modelcontextprotocol.io/docs/concepts/prompts">prompt</a> that embeds the voice guide and the writing instructions inline, so the slash command works without an extra tool round-trip. claude.ai does not surface MCP prompts in the UI, so the <code>get_voice_guide</code> tool is the substitute there.</p>
+<p>Next up: a homelab journal tool, a snippet vault for the hundred and seventeen variations of <code>Connect-MgGraph</code> I have written in the last year, maybe a query tool for the rack inventory so I can ask “what’s plugged into op2 port 5” without being at a desk.</p>
+<p>The pattern I keep coming back to: anything I want to do from my phone the same way I do it from a terminal becomes a tool on this server. The OAuth is paid for. The next addition is a <code>registerTool</code> call away.</p>
+<h2 id="what-i-would-skip-if-i-did-it-again"><a href="#what-i-would-skip-if-i-did-it-again" class="heading-link">What I would skip if I did it again</a><a href="#what-i-would-skip-if-i-did-it-again" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Nothing, actually. The first four failures all surfaced clear error responses; reading the wire bought every fix. The fifth one was avoidable if I had taken the boot warning seriously instead of writing it off as a “for serious deployments” disclaimer.</p>
+<p>That is also a defensible default. Plenty of warnings really are for serious deployments only. This one was not.</p>  </div> <nav aria-label="Post navigation" class="mt-20 grid gap-3 border-t border-border/70 pt-10 sm:grid-cols-2"><a href="/posts/building-this-blog" class="card group flex flex-col gap-1.5 p-5 sm:col-start-1"><span class="meta-sm flex items-center gap-1.5 text-fg-muted transition-colors group-hover:text-accent"><span aria-hidden="true">←</span><span>Older</span></span><span class="font-medium text-fg transition-colors group-hover:text-accent">This took longer than writing would have</span></a><span class="hidden sm:block"></span></nav> <section data-pagefind-ignore="all" class="mt-20 border-t border-border/70 pt-10"> <h2 class="meta-sm mb-4 text-fg-muted">Comments &amp; reactions</h2> <div class="giscus-mount"></div> </section> <script>(function(){const mapping = "pathname";
+
+  // --- Giscus bootstrap ---------------------------------------------------
+  // Mounts the Giscus client script into .giscus-mount with the current
+  // site theme baked in (prevents flash-of-wrong-theme).
+
+  function giscusTheme() {
+    return document.documentElement.getAttribute('data-theme') === 'dark'
+      ? 'noborder_dark'
+      : 'noborder_light';
+  }
+
+  function mountGiscus() {
+    const mount = document.querySelector('.giscus-mount');
+    if (!mount) return;
+    // Already mounted? (e.g., after Astro view-transition swap)
+    if (mount.querySelector('iframe.giscus-frame, script[src*="giscus"]'))
+      return;
+
+    const s = document.createElement('script');
+    s.src = 'https://giscus.app/client.js';
+    s.dataset.repo = 'charlievogt/charlie.tools';
+    s.dataset.repoId = 'R_kgDOSKys8g';
+    s.dataset.category = 'Comments';
+    s.dataset.categoryId = 'DIC_kwDOSKys8s4C7kX3';
+    s.dataset.mapping = mapping;
+    s.dataset.strict = '0';
+    s.dataset.reactionsEnabled = '1';
+    s.dataset.emitMetadata = '0';
+    s.dataset.inputPosition = 'bottom';
+    s.dataset.theme = giscusTheme();
+    s.dataset.lang = 'en';
+    s.dataset.loading = 'lazy';
+    s.crossOrigin = 'anonymous';
+    s.async = true;
+    mount.appendChild(s);
+  }
+
+  // --- Theme sync ---------------------------------------------------------
+  function pushThemeToGiscus() {
+    const iframe = document.querySelector('iframe.giscus-frame');
+    if (!iframe || !iframe.contentWindow) return;
+    iframe.contentWindow.postMessage(
+      { giscus: { setConfig: { theme: giscusTheme() } } },
+      'https://giscus.app',
+    );
+  }
+
+  // Only bind the observer once per page session.
+  if (!window.__giscusThemeBound) {
+    window.__giscusThemeBound = true;
+    new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        if (m.attributeName === 'data-theme') {
+          pushThemeToGiscus();
+        }
+      }
+    }).observe(document.documentElement, { attributes: true });
+  }
+
+  // Mount now + on every view-transition navigation.
+  mountGiscus();
+  document.addEventListener('astro:page-load', mountGiscus);
+})();</script> </article>  </main> <footer data-pagefind-ignore="all" class="relative mt-32 border-t border-border/70"> <div class="mx-auto flex w-full max-w-content flex-col items-start justify-between gap-6 px-screen-px py-10 sm:flex-row sm:items-center"> <div class="flex items-baseline gap-3"> <span class="group text-sm inline-flex items-baseline font-semibold leading-none" style="letter-spacing: -0.025em;"> <span class="text-fg transition-colors group-hover:text-accent">charlie</span><span class="inline-block text-accent transition-transform duration-300 group-hover:-translate-y-[1px]" style="font-size: 1.15em; line-height: 1; margin: 0 0.01em;" aria-hidden="true">.</span><span class="text-fg transition-colors group-hover:text-accent">tools</span> </span> <span class="meta-sm">&copy; 2026</span> </div> <nav aria-label="Secondary"> <ul class="flex items-center gap-5"> <li> <a href="/rss.xml" class="meta transition-colors hover:text-fg">
+RSS
+</a> </li> <li> <a href="/sitemap-index.xml" class="meta transition-colors hover:text-fg">
+Sitemap
+</a> </li> <li> <a href="https://github.com/charlievogt" rel="noopener" class="meta transition-colors hover:text-fg">
+GitHub
+</a> </li> </ul> </nav> </div> </footer> <script>
+      // Heading-link / heading-anchor click handling.
+      //
+      // - Intercepts both the wrapping title link AND the # icon so we
+      //   can use history.replaceState() instead of letting the browser's
+      //   default navigation push a history entry for every section.
+      //   Result: back button returns to the page the visitor came from,
+      //   not to the previous anchor on the same page.
+      //
+      // - preventDefault here does NOT affect right-click / tap-and-hold
+      //   context menus, so the browser's native "Copy Link" menu for
+      //   the title link still works.
+      //
+      // - When the user clicks the # icon specifically, also copy the
+      //   fully-resolved URL to clipboard and flash the copied state.
+      (function () {
+        if (window.__headingLinkBound) return;
+        window.__headingLinkBound = true;
+
+        document.addEventListener('click', function (e) {
+          // Let modifier-clicks behave normally (open in new tab, etc.)
+          if (
+            e.defaultPrevented ||
+            e.button !== 0 ||
+            e.metaKey ||
+            e.ctrlKey ||
+            e.shiftKey ||
+            e.altKey
+          )
+            return;
+
+          var t = e.target;
+          if (!(t instanceof Element)) return;
+          var link = t.closest('a.heading-link, a.heading-anchor');
+          if (!link) return;
+
+          var href = link.getAttribute('href');
+          if (!href || href.charAt(0) !== '#') return;
+
+          var id = decodeURIComponent(href.slice(1));
+          var target = document.getElementById(id);
+          if (!target) return;
+
+          // Block default nav so it doesn't push a history entry
+          e.preventDefault();
+
+          // Replace the current URL so the section is shareable, but
+          // never push — anchor hopping shouldn't clutter history.
+          try {
+            history.replaceState(null, '', href);
+          } catch (_) {}
+
+          // Smooth scroll to the heading (respecting reduced motion)
+          var reduce =
+            window.matchMedia &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          target.scrollIntoView({
+            behavior: reduce ? 'auto' : 'smooth',
+            block: 'start',
+          });
+
+          // If the # icon was the thing clicked, copy + flash
+          if (link.classList.contains('heading-anchor')) {
+            var url = new URL(href, window.location.href).href;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(url).catch(function () {});
+            }
+            link.setAttribute('data-copied', 'true');
+            window.setTimeout(function () {
+              link.removeAttribute('data-copied');
+            }, 1400);
+          }
+        });
+      })();
+
+      // Smooth-scroll to the anchor when a URL with a hash is loaded.
+      // Browsers normally jump instantly on initial navigation; this
+      // intercepts, resets to the top, and then animates to the target.
+      // Respects prefers-reduced-motion.
+      (function () {
+        function smoothScrollToHash() {
+          var hash = window.location.hash;
+          if (!hash || hash.length < 2) return;
+          if (
+            window.matchMedia &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          )
+            return;
+          var id;
+          try {
+            id = decodeURIComponent(hash.slice(1));
+          } catch (_) {
+            id = hash.slice(1);
+          }
+          var target = document.getElementById(id);
+          if (!target) return;
+          // Instant reset to counteract the browser's auto-jump
+          window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+          // Smooth scroll after two frames so layout has stabilized
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+          });
+        }
+        if (!window.__hashSmoothScroll) {
+          window.__hashSmoothScroll = true;
+          if (document.readyState === 'complete') {
+            smoothScrollToHash();
+          } else {
+            window.addEventListener('load', smoothScrollToHash);
+          }
+          // Handle view-transition navigations too
+          document.addEventListener('astro:page-load', smoothScrollToHash);
+        }
+      })();
+
+      // Heading-anchor enhancement for non-MDX pages (.astro files like
+      // About). Mirrors what the rehype plugin does for markdown posts:
+      // wrap text in <a.heading-link>, append <a.heading-anchor> with
+      // the same SVG icon. Idempotent — skips headings that already
+      // have the markup.
+      (function () {
+        if (window.__headingEnhanceBound) return;
+        window.__headingEnhanceBound = true;
+
+        var ICON_SVG =
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+          '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>' +
+          '<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>' +
+          '</svg>';
+
+        function slugify(s) {
+          return (s || '')
+            .toLowerCase()
+            .trim()
+            .replace(/['’`"]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        }
+
+        function enhance(h) {
+          // Already wrapped (rehype handled it on a markdown page)?
+          if (h.querySelector(':scope > a.heading-link')) return;
+
+          if (!h.id) {
+            var slug = slugify(h.textContent);
+            if (!slug) return;
+            // Avoid id collision
+            var base = slug;
+            var n = 2;
+            while (
+              document.getElementById(slug) &&
+              document.getElementById(slug) !== h
+            ) {
+              slug = base + '-' + n++;
+            }
+            h.id = slug;
+          }
+
+          var hash = '#' + h.id;
+          var link = document.createElement('a');
+          link.href = hash;
+          link.className = 'heading-link';
+          while (h.firstChild) link.appendChild(h.firstChild);
+          h.appendChild(link);
+
+          var anchor = document.createElement('a');
+          anchor.href = hash;
+          anchor.className = 'heading-anchor';
+          anchor.setAttribute('aria-label', 'Copy link to this section');
+          anchor.tabIndex = -1;
+          anchor.innerHTML = ICON_SVG;
+          h.appendChild(anchor);
+        }
+
+        function enhanceAll() {
+          var headings = document.querySelectorAll(
+            '.prose h2, .prose h3, .prose h4, .prose h5, .prose h6',
+          );
+          for (var i = 0; i < headings.length; i++) enhance(headings[i]);
+        }
+
+        enhanceAll();
+        document.addEventListener('astro:page-load', enhanceAll);
+      })();
+    </script> </body> </html>
