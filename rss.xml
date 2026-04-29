@@ -1,4 +1,124 @@
-<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>charlie.tools</title><description>Charlie Vogt writes about PowerShell, SPFx, Microsoft 365, and homelab infrastructure.</description><link>https://charlie.tools/</link><language>en-us</language><item><title>I wrote an OAuth server before I wrote this post</title><link>https://charlie.tools/posts/oauth-server-before-this-post/</link><guid isPermaLink="true">https://charlie.tools/posts/oauth-server-before-this-post/</guid><description>Setting up a personal MCP server. The first tool was easy. The auth was not.</description><pubDate>Mon, 27 Apr 2026 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;I wanted Claude Code on every machine I work from to share one set of tools, and I wanted those tools available from my phone too. Claude Code skills live on disk, so every laptop I use needs its own copy. &lt;a href=&quot;http://claude.ai&quot;&gt;claude.ai&lt;/a&gt; skills live in your account, uploaded separately. Two copies of the same logic, drifting from the moment I edit one. Felt wrong the moment I typed it.&lt;/p&gt;
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>charlie.tools</title><description>Charlie Vogt writes about PowerShell, SPFx, Microsoft 365, and homelab infrastructure.</description><link>https://charlie.tools/</link><language>en-us</language><item><title>Every link in your SharePoint tenant, sharing wrappers and all</title><link>https://charlie.tools/posts/tenant-link-inventory/</link><guid isPermaLink="true">https://charlie.tools/posts/tenant-link-inventory/</guid><description>A tenant-wide scanner, a backlinks index, sharing-wrapper canonicalization, and one-button find-and-replace for every page and document.</description><pubDate>Wed, 29 Apr 2026 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;import Callout from &apos;../../components/mdx/Callout.astro&apos;;
+import RepoLink from &apos;../../components/mdx/RepoLink.astro&apos;;
+import UrlBlock from &apos;../../components/mdx/UrlBlock.astro&apos;;
+import UrlVariants from &apos;../../components/mdx/UrlVariants.astro&apos;;
+import { DemoPlayer } from &apos;../../components/mdx/DemoPlayer&apos;;&lt;/p&gt;
+&lt;p&gt;Days before we cut over the first site in our rolling SharePoint migration, a review team we&apos;d pulled together (senior leaders, project managers, content owners from across the org, and other volunteers) came back with a question. &quot;Most of the links don&apos;t work. Some point at SharePoint Online, some at the on-prem farm, some at totally broken paths. A lot of them load an ice cream cone or a bicycle. Does the image shown indicate different types of problems?&quot;&lt;/p&gt;
+&lt;figure&gt;
+
+&lt;figcaption&gt;
+Look closely: the bike has a flat tire, the ice cream cone has fallen on the ground, the paper airplane has crashed. Each illustration is itself a small failure. A nice touch.
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;p&gt;It does not. SharePoint&apos;s not-found page rotates through a small set of friendly illustrations at random. The bicycle and the ice cream cone mean the same thing as the paper airplane. It was an earnest question, asked by people trying to make sense of a wall of broken links. The pattern was there, just not in the icons. It was hidden inside thousands of pages no one had read in three years. Roughly 40% of the links on the staged pages were broken.&lt;/p&gt;
+&lt;p&gt;A SharePoint tenant migration breaks links you did not know existed. And then there are sharing links.&lt;/p&gt;
+&lt;p&gt;Modern pages have hyperlinks in &lt;code&gt;&amp;lt;a href&amp;gt;&lt;/code&gt; tags inside their canvas content. Classic pages have them in raw HTML field values. Word documents have them in &lt;code&gt;document.xml.rels&lt;/code&gt;. Excel workbooks have them in &lt;code&gt;xl/worksheets/_rels/sheetN.xml.rels&lt;/code&gt;. PowerPoint has them per slide. PDFs have them as &lt;code&gt;/Link&lt;/code&gt; annotations with &lt;code&gt;/URI&lt;/code&gt; actions. After a few years of normal tenant use, links accumulate by the tens of thousands. After a migration that consolidates hubs, renames site collections, or retires legacy hosts, a sizable fraction of them quietly turn into 404s. Nobody notices until somebody clicks one.&lt;/p&gt;
+&lt;p&gt;To my knowledge, Microsoft does not ship a tenant-wide tool for finding any of them. They have search, site analytics, migration assessment. None of those tell you &quot;this PDF in HR&apos;s library has six external hyperlinks, two of them point at a host you decommissioned six months ago.&quot; The closest first-party answer is a PowerShell script that walks one site at a time, which is fine for ten sites and unusable at five thousand.&lt;/p&gt;
+&lt;p&gt;So I built one.&lt;/p&gt;
+
+&lt;h2&gt;Sharing links are the part that hurts&lt;/h2&gt;
+&lt;p&gt;When a user clicks &quot;Share&quot; on a file in a SharePoint site, the platform generates a wrapper URL. The most common form looks like this:&lt;/p&gt;
+
+&lt;p&gt;The &lt;code&gt;/:b:/r/&lt;/code&gt; prefix is the platform&apos;s &quot;browser viewer&quot; sharing redirect. The path after it is the actual server-relative path of the file. These get pasted into modern pages, OneNote, Teams chats, intranet articles, and emails sent six years ago. They render fine as long as nothing changes. The moment the file moves, gets renamed, or the library gets reorganized, the link breaks. More subtly, the URL is &lt;em&gt;not&lt;/em&gt; the canonical SharePoint URL for that file. Two pages that link to the same file will often have two completely different URLs in their HTML: one wrapped, one direct, and a naive find-and-replace will miss half of them.&lt;/p&gt;
+&lt;p&gt;The canonical form is the library viewer URL:&lt;/p&gt;
+
+&lt;p&gt;That URL is stable, library-aware, and is what site owners actually want their pages to use. The tool resolves the &lt;code&gt;/:b:/r/&lt;/code&gt; form into that canonical URL and offers a one-click &quot;Fix this link&quot; that rewrites the page in place. The same approach works for the Office Online viewer wrappers (&lt;code&gt;/:w:/r/&lt;/code&gt; for Word, &lt;code&gt;/:x:/r/&lt;/code&gt; for Excel, &lt;code&gt;/:p:/r/&lt;/code&gt; for PowerPoint, &lt;code&gt;/:o:/r/&lt;/code&gt; for OneNote): strip the prefix, decode the path, build the canonical URL.&lt;/p&gt;
+
+I have not been able to find Microsoft documentation detailing how the path-segment codes work. [Community reverse-engineering](https://sharepointcass.com/2021/03/11/what-do-the-parameters-in-a-shared-sharepoint-onedrive-link-mean/) maps the colon-bracketed letter to file type (`:w:` Word, `:x:` Excel, `:p:` PowerPoint, `:o:` OneNote, `:b:` PDF, `:f:` folder, `:u:` other) and the following segment to sharing scope (`r` and `s` for &quot;uses existing permissions,&quot; `g` for Anyone link, `t` for specific people, `u` for org-wide). Different community analyses occasionally disagree on edge cases. The labels in this post follow the most-cited convention.
+
+&lt;p&gt;A second short-link form exists where the path itself is replaced by an opaque token. Microsoft documents this as the &lt;a href=&quot;https://learn.microsoft.com/sharepoint/dev/spfx/shorter-share-link-format&quot;&gt;shorter share link format&lt;/a&gt;, the successor to the legacy &lt;code&gt;guestaccess.aspx?share=...&lt;/code&gt; URLs. The trailing segment is a sharing token, not a server-relative path, so canonicalization is not a string operation. The supported way to resolve one is to encode the URL into a sharing token and call &lt;a href=&quot;https://learn.microsoft.com/graph/api/shares-get?view=graph-rest-1.0&quot;&gt;&lt;code&gt;GET /shares/{shareIdOrEncodedSharingUrl}&lt;/code&gt;&lt;/a&gt; against Microsoft Graph, which returns the underlying &lt;code&gt;driveItem&lt;/code&gt;. Microsoft&apos;s docs explicitly call out applications that parse a URL to determine its sharing-link type as one of the scenarios the new format breaks, and recommend migrating to Graph rather than continuing to parse. The tool flags these in the inventory and leaves the resolution for a future iteration.&lt;/p&gt;
+
+Which form a wrapper takes depends on the sharing scope the user picked. A [Microsoft Q&amp;amp;A](https://learn.microsoft.com/answers/questions/83ec9adf-8381-421e-b749-ef8f35721617/sharepoint-url-format-guest-token-when-sharing-in) confirms that &quot;People with existing access&quot; links carry the file&apos;s server-relative path (the form the tool can canonicalize as a string), while default &quot;Copy link,&quot; &quot;Anyone with the link,&quot; &quot;Specific people,&quot; and &quot;People in your organization&quot; all carry an opaque token. Path-bearing forms dominated the pages I scanned, mostly because internal links inside SharePoint pages tend to be inserted through the page editor (which produces canonical paths) or shared with audiences that already have access. Token-bearing forms cluster around files explicitly shared via a scope that grants new access. I can&apos;t find a Microsoft-published  breakdown of which gestures produce which form.
+
+&lt;h2&gt;I did not know how many ways the same file could be linked to&lt;/h2&gt;
+&lt;p&gt;The sharing wrapper is one form. It is not the only form. Pick a single PDF in a single library and look at every link in the tenant that points at it. A short, non-exhaustive list of the variants I found, with the distinguishing fragment highlighted:&lt;/p&gt;
+&lt;p&gt;&amp;lt;UrlVariants variants={[
+{
+label: &apos;Direct server-relative path&apos;,
+url: &apos;&lt;a href=&quot;https://tenant.sharepoint.com/sites/x/Shared%20Documents/handbook.pdf&quot;&gt;https://tenant.sharepoint.com/sites/x/Shared Documents/handbook.pdf&lt;/a&gt;&apos;,
+highlight: &apos;/Shared%20Documents/handbook.pdf&apos;,
+note: &apos;The path itself. Stable until something is renamed or moved.&apos;,
+},
+{
+label: &apos;Library viewer (canonical form)&apos;,
+url: &apos;&lt;a href=&quot;https://tenant.sharepoint.com/sites/x/Shared%20Documents/Forms/AllItems.aspx?id=/sites/x/Shared%20Documents/handbook.pdf&quot;&gt;https://tenant.sharepoint.com/sites/x/Shared Documents/Forms/AllItems.aspx?id=/sites/x/Shared Documents/handbook.pdf&lt;/a&gt;&apos;,
+highlight: &apos;?id=/sites/x/Shared%20Documents/handbook.pdf&apos;,
+note: &apos;Library-aware. The form admins should standardize on.&apos;,
+},
+{
+label: &apos;Browser-viewer sharing wrapper&apos;,
+url: &apos;&lt;a href=&quot;https://tenant.sharepoint.com/:b:/r/sites/x/Shared%20Documents/handbook.pdf&quot;&gt;https://tenant.sharepoint.com/:b:/r/sites/x/Shared Documents/handbook.pdf&lt;/a&gt;&apos;,
+highlight: &apos;/:b:/r/&apos;,
+note: &apos;&quot;People with existing access&quot; sharing link. Path is canonicalizable as a string.&apos;,
+},
+{
+label: &apos;Opaque-token sharing wrapper&apos;,
+url: &apos;&lt;a href=&quot;https://tenant.sharepoint.com/:b:/g/EaBcDef&quot;&gt;https://tenant.sharepoint.com/:b:/g/EaBcDef&lt;/a&gt;...?e=...&apos;,
+highlight: &apos;/:b:/g/EaBcDef...&apos;,
+note: &apos;Sharing token, not a server-relative path. Resolve via Microsoft Graph /shares.&apos;,
+},
+{
+label: &apos;GUID-based Doc.aspx redirect&apos;,
+url: &apos;&lt;a href=&quot;https://tenant.sharepoint.com/sites/x/_layouts/15/Doc.aspx?sourcedoc=&quot;&gt;https://tenant.sharepoint.com/sites/x/_layouts/15/Doc.aspx?sourcedoc=&lt;/a&gt;...&apos;,
+highlight: &apos;_layouts/15/Doc.aspx?sourcedoc=&apos;,
+note: &apos;Legacy SharePoint redirect. The server resolves the GUID to the real file.&apos;,
+},
+{
+label: &apos;Library viewer with leftover #search fragment&apos;,
+url: &apos;&lt;a href=&quot;https://tenant.sharepoint.com/sites/x/Shared%20Documents/Forms/AllItems.aspx?id=/sites/x/Shared%20Documents/handbook.pdf#search=handbook&quot;&gt;https://tenant.sharepoint.com/sites/x/Shared Documents/Forms/AllItems.aspx?id=/sites/x/Shared Documents/handbook.pdf#search=handbook&lt;/a&gt;&apos;,
+highlight: &apos;#search=handbook&apos;,
+note: &apos;Pasted out of an SP search results page. Harmless on-prem; loads the wrong file on SPO.&apos;,
+},
+]} /&amp;gt;&lt;/p&gt;
+&lt;p&gt;All point at the same PDF. All show up in real pages.&lt;/p&gt;
+&lt;p&gt;The last one took the longest to figure out. A real example, anonymized only by tenant:&lt;/p&gt;
+&lt;p&gt;&amp;lt;UrlVariants variants={[
+{
+label: &apos;In the wild, broken by the migration&apos;,
+tone: &apos;problem&apos;,
+url: &apos;&lt;a href=&quot;https://tenant.sharepoint.com/sites/online-training-manual/Shared%20Documents/Forms/AllItems.aspx?id=/sites/online-training-manual/Shared%20Documents/EFT.pdf&amp;amp;parent=/sites/online-training-manual/Shared%20Documents#search=eft&quot;&gt;https://tenant.sharepoint.com/sites/online-training-manual/Shared Documents/Forms/AllItems.aspx?id=/sites/online-training-manual/Shared Documents/EFT.pdf&amp;amp;parent=/sites/online-training-manual/Shared Documents#search=eft&lt;/a&gt;&apos;,
+highlight: &apos;#search=eft&apos;,
+note: &apos;Somebody searched for the file in SharePoint Server, copied the URL out of the browser bar, and pasted it into a page. Harmless on-prem; loads the wrong file on SPO.&apos;,
+},
+]} /&amp;gt;&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;#search=eft&lt;/code&gt; is the fingerprint. The link &quot;works&quot; in the sense that something renders. It just is not what the author thought they were linking to. Hundreds of those scattered across the tenant, all from one bad habit nobody knew was bad.&lt;/p&gt;
+&lt;p&gt;A naive find-and-replace catches one or two of these forms and misses the rest. A regex over &lt;code&gt;&amp;lt;a href&amp;gt;&lt;/code&gt; values is worse: it matches a literal string, and the same file produces dozens of literal strings. The classifier&apos;s job is to recognize all of these as references to the same canonical resource and rewrite them to one stable URL. Getting that right took longer than writing the scanner did.&lt;/p&gt;
+&lt;h2&gt;What the tool actually does&lt;/h2&gt;
+&lt;p&gt;Once you have a list of every variant, you need a place to put them and a way to act on them. The result is an Azure Function plus an SPFx web part.&lt;/p&gt;
+&lt;p&gt;The Function is a tenant-wide scanner. It walks every site collection in scope, pulls every modern page, opens every Office document and PDF, extracts every hyperlink, classifies and normalizes each one, and writes the lot into Azure Table Storage with two indexes: by source page, and by target URL.&lt;/p&gt;
+&lt;p&gt;Every link is tagged with one of a handful of classes: &lt;code&gt;office-online&lt;/code&gt;, &lt;code&gt;sharing-link&lt;/code&gt;, &lt;code&gt;spo-internal&lt;/code&gt;, &lt;code&gt;malformed-spo-link&lt;/code&gt;, &lt;code&gt;onprem&lt;/code&gt;, &lt;code&gt;relative&lt;/code&gt;. Each class has its own canonicalization rule. The &quot;Fix this link&quot; button uses the canonical form to rewrite the page so all references to a given file converge on the same URL across the tenant.&lt;/p&gt;
+&lt;p&gt;The web part is the UI a tenant admin uses. Search the inventory. Pick a URL. See every page and every paragraph that references it. Click any row to see the classification, the canonical resolution, and the diff that will be applied if you click &quot;Fix this link.&quot;&lt;/p&gt;
+&lt;h2&gt;End-to-end in a few clicks&lt;/h2&gt;
+&lt;p&gt;&amp;lt;DemoPlayer client:visible frames={[
+{ src: &apos;/blog/demo-01-scan-running.png?v=2&apos;, alt: &apos;Scan in progress&apos;, ms: 2000, caption: &apos;Kick off a tenant scan from the admin web part.&apos; },
+{ src: &apos;/blog/demo-02-scan-complete.png?v=2&apos;, alt: &apos;Scan complete with results&apos;, ms: 2200, caption: &apos;Inventory loads. Pages and documents merge into one view.&apos; },
+{ src: &apos;/blog/demo-03-filtered.png?v=2&apos;, alt: &apos;Filtered to sharing-link rows&apos;, ms: 2200, caption: &apos;Filter to sharing-link rows to see the wrappers.&apos; },
+{ src: &apos;/blog/demo-04-detail-panel.png?v=2&apos;, alt: &apos;Detail panel for a single link&apos;, ms: 2400, caption: &apos;Open a row: source page, classification, canonical URL.&apos; },
+{ src: &apos;/blog/demo-05-fr-dialog.png?v=2&apos;, alt: &apos;Find &amp;amp; Replace dialog&apos;, ms: 2400, caption: &apos;Click &quot;Fix this link&quot;. The Find/Replace dialog pre-fills the canonical URL.&apos; },
+{ src: &apos;/blog/demo-06-fr-preview.png?v=2&apos;, alt: &apos;Preview of the replacement&apos;, ms: 2400, caption: &apos;Preview the diff before applying.&apos; },
+{ src: &apos;/blog/demo-07-fr-applied.png?v=2&apos;, alt: &apos;Replacement applied&apos;, ms: 2800, caption: &apos;Apply. The row updates and deep-links to the patched page.&apos; },
+]} /&amp;gt;&lt;/p&gt;
+&lt;p&gt;Run a scan. Inventory loads. Drill into a &lt;code&gt;sharing-link&lt;/code&gt; row. The detail panel shows the wrapper URL, the canonical URL it resolves to, and a &quot;Fix this link&quot; button. Click it, preview the diff, apply. The result row deep-links to the patched page so the change is verifiable in one click. The &quot;rewrite all of these&quot; version is the same flow against many rows at once.&lt;/p&gt;
+&lt;h2&gt;The backlinks index is the other half of the product&lt;/h2&gt;
+&lt;p&gt;Given a URL, &quot;where is this referenced&quot; is the question you want answered after a migration.&lt;/p&gt;
+&lt;p&gt;&quot;I&apos;m about to retire &lt;code&gt;legacy-portal.example.com&lt;/code&gt;. Who is going to scream when I do?&quot; Pull up the URL, see 137 references across 23 sites, send the list to the affected site owners before flipping the DNS.&lt;/p&gt;
+&lt;p&gt;&quot;This PDF was just removed. Who linked to it?&quot; Same query, answered in seconds instead of by asking around.&lt;/p&gt;
+&lt;p&gt;&quot;This intranet section is being deprecated. Which other pages still point at it?&quot; Backlinks index, page count, done.&lt;/p&gt;
+&lt;p&gt;The scanner runs daily on the schedule a tenant admin sets. The index is fresh enough that &quot;what links to what&quot; is always answerable within a day.&lt;/p&gt;
+&lt;h2&gt;Find-and-replace, with the audit log intact&lt;/h2&gt;
+&lt;p&gt;Once you have the inventory, rewriting is the natural next step. Pick a URL, pick its replacement, kick off a job. The job rewrites modern pages by PATCHing each page&apos;s &lt;code&gt;CanvasContent1&lt;/code&gt; field through the Site Pages list-item REST endpoint. Document rows are deliberately read-only.&lt;/p&gt;
+
+PDF link annotations live inside indirect objects, and the file&apos;s [cross-reference (xref) table](https://pdfa.org/resource/iso-32000-1/) indexes those objects by absolute byte offset from the start of the file. Changing a URL inside an annotation usually changes the size of its containing object, which invalidates every xref entry after it. The xref table and trailer have to be rebuilt. Doing that safely without re-saving the entire PDF is fragile in a way modern pages are not. PDF rows surface in the inventory and stay read-only.
+
+&lt;p&gt;The interesting design detail: writes go through user on-behalf-of, not the app&apos;s permissions. The web part hands the calling user&apos;s SPFx token to the Function. The Function exchanges it for a delegated token. Writes happen as that user.&lt;/p&gt;
+&lt;p&gt;So the SharePoint version history shows the actual user who changed each page. Not &quot;the app rewrote 4,000 pages last Tuesday.&quot; A tenant admin running find-and-replace gets to write everywhere. A site owner running it is scoped to the sites they own. Compliance teams care about this in a way they do not care about most things, and app-only writes would have erased the trail of who did what.&lt;/p&gt;
+&lt;h2&gt;The web part exists because PowerShell does not&lt;/h2&gt;
+&lt;p&gt;An Azure Function and an SPFx web part to do what could have been a PowerShell script. PowerShell does not handle five thousand site collections gracefully, and the people who care most about tenant link rot are not going to run PowerShell anyway. Site owners want a search box. Tenant admins want a &quot;rewrite all of these&quot; button. Compliance teams want the audit trail intact. The web part is the part that gets the tool used.&lt;/p&gt;
+&lt;h2&gt;Which copy is the real one&lt;/h2&gt;
+&lt;p&gt;The inventory shipped. The review team came back with a different question. They were now staring at libraries that had multiple copies of the same policy PDF and they wanted to know which one to keep. Some pairs were byte-identical. Some were not, but probably should have been. Some were genuinely different documents that happened to share a filename.&lt;/p&gt;
+&lt;p&gt;There are five distinct flavors of &quot;is this the same document?&quot;, and the obvious flavor is the least useful. That&apos;s the next post.&lt;/p&gt;
+&lt;p&gt;The migration finished. The tool still finds things. Handle the next fire that comes up.&lt;/p&gt;
+</content:encoded><category>Microsoft365</category><category>SPFx</category></item><item><title>I wrote an OAuth server before I wrote this post</title><link>https://charlie.tools/posts/oauth-server-before-this-post/</link><guid isPermaLink="true">https://charlie.tools/posts/oauth-server-before-this-post/</guid><description>Setting up a personal MCP server. The first tool was easy. The auth was not.</description><pubDate>Mon, 27 Apr 2026 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;I wanted Claude Code on every machine I work from to share one set of tools, and I wanted those tools available from my phone too. Claude Code skills live on disk, so every laptop I use needs its own copy. &lt;a href=&quot;http://claude.ai&quot;&gt;claude.ai&lt;/a&gt; skills live in your account, uploaded separately. Two copies of the same logic, drifting from the moment I edit one. Felt wrong the moment I typed it.&lt;/p&gt;
 &lt;p&gt;The right answer is a small server that speaks the &lt;a href=&quot;https://modelcontextprotocol.io/&quot;&gt;Model Context Protocol&lt;/a&gt;. Both clients connect to the same URL, both call the same tools, no copying.&lt;/p&gt;
 &lt;p&gt;I picked the smallest plausible stack: TypeScript with the &lt;a href=&quot;https://github.com/modelcontextprotocol/typescript-sdk&quot;&gt;official MCP SDK&lt;/a&gt;, Express, Docker, deployed as a single replica on the Swarm cluster I already had running. The first version exposed a &lt;code&gt;commit_blog_draft&lt;/code&gt; tool that creates a &lt;code&gt;draft/&amp;lt;slug&amp;gt;&lt;/code&gt; branch in the blog&apos;s source repo and writes an MDX file. End to end, maybe an hour of writing code.&lt;/p&gt;
 &lt;p&gt;The auth, though.&lt;/p&gt;

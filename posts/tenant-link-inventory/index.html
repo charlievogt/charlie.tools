@@ -1,0 +1,375 @@
+<!DOCTYPE html><html lang="en"> <head><!-- Charset, viewport, theme --><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="Astro v5.18.1"><meta name="color-scheme" content="light dark"><!-- Run before first paint to avoid flash of wrong theme. Re-runs on
+     every Astro view-transition navigation so the theme attribute is
+     reasserted onto the live document. --><script data-astro-rerun>
+  (function () {
+    try {
+      var stored = localStorage.getItem('theme');
+      var prefersDark = window.matchMedia(
+        '(prefers-color-scheme: dark)',
+      ).matches;
+      var theme =
+        stored === 'dark' || stored === 'light'
+          ? stored
+          : prefersDark
+            ? 'dark'
+            : 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    } catch (e) {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  })();
+</script><!-- Carry the current theme onto the incoming document before Astro's
+     ClientRouter swaps it in, so view-transition navigation can't show
+     a flash of the wrong theme between pages. --><script>
+  (function () {
+    if (window.__charlieThemePersistBound) return;
+    window.__charlieThemePersistBound = true;
+    document.addEventListener('astro:before-swap', function (e) {
+      var current = document.documentElement.getAttribute('data-theme');
+      if (current && e && e.newDocument) {
+        e.newDocument.documentElement.setAttribute('data-theme', current);
+      }
+    });
+  })();
+</script><!-- Canonical & favicons --><link rel="canonical" href="https://charlie.tools/posts/tenant-link-inventory/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="sitemap" href="/sitemap-index.xml"><link rel="alternate" type="application/rss+xml" title="charlie.tools" href="https://charlie.tools/rss.xml"><!-- Primary meta --><title>Every link in your SharePoint tenant, sharing wrappers and all — charlie.tools</title><meta name="title" content="Every link in your SharePoint tenant, sharing wrappers and all — charlie.tools"><meta name="description" content="A tenant-wide scanner, a backlinks index, sharing-wrapper canonicalization, and one-button find-and-replace for every page and document."><meta name="author" content="Charlie Vogt"><meta name="keywords" content="Microsoft365, SPFx"><!-- Open Graph --><meta property="og:type" content="article"><meta property="og:url" content="https://charlie.tools/posts/tenant-link-inventory/"><meta property="og:title" content="Every link in your SharePoint tenant, sharing wrappers and all — charlie.tools"><meta property="og:description" content="A tenant-wide scanner, a backlinks index, sharing-wrapper canonicalization, and one-button find-and-replace for every page and document."><meta property="og:image" content="https://charlie.tools/og-default.png"><meta property="og:site_name" content="charlie.tools"><meta property="article:published_time" content="2026-04-29T00:00:00.000Z"><meta property="article:tag" content="Microsoft365"><meta property="article:tag" content="SPFx"><!-- Twitter --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:url" content="https://charlie.tools/posts/tenant-link-inventory/"><meta name="twitter:title" content="Every link in your SharePoint tenant, sharing wrappers and all — charlie.tools"><meta name="twitter:description" content="A tenant-wide scanner, a backlinks index, sharing-wrapper canonicalization, and one-button find-and-replace for every page and document."><meta name="twitter:image" content="https://charlie.tools/og-default.png"><!-- Cloudflare Web Analytics — production builds only. The preview server
+     runs `astro dev` so import.meta.env.PROD is false there and the beacon
+     is omitted, keeping preview traffic out of the dashboard. --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;b0656b73b611467e98011b1577c1c873&quot;}"></script><!-- Umami self-hosted analytics — production only, same reason. Runs on a
+     first-party subdomain so default ad blockers don't drop it the way they
+     drop cloudflareinsights.com. --><script defer src="https://a.charlie.tools/u" data-website-id="479b3fda-d983-49ba-b889-3e2cfaaa4879"></script><!-- Umami session recorder — 100% sample for now while traffic is low,
+     moderate masking, 5min cap. Dial sample-rate down once volume grows.
+     PROD only so preview traffic isn't recorded. --><script defer src="https://a.charlie.tools/recorder.js" data-website-id="479b3fda-d983-49ba-b889-3e2cfaaa4879" data-sample-rate="1" data-mask-level="moderate" data-max-duration="300000"></script><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.BFfqj1ee.js"></script><link rel="stylesheet" href="/_astro/_slug_.CiGQa8Pc.css"><script type="module" src="/_astro/page.IvKoM_B8.js"></script><style>.callout{margin:2rem 0;padding:1rem 1.25rem 1.1rem;border:1px solid rgb(var(--border));border-left-width:3px;border-radius:.625rem;background:rgb(var(--bg-raised));font-size:.95em}.callout__head{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;font-family:Geist Mono Variable,Geist Mono,ui-monospace,monospace;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase}.callout__icon{display:inline-flex;width:1.15rem;height:1.15rem;align-items:center;justify-content:center;border-radius:9999px;font-size:.75rem;font-weight:700;line-height:1}.callout__body{color:rgb(var(--fg) / .9);line-height:1.6}.callout__body>:first-child{margin-top:0}.callout__body>:last-child{margin-bottom:0}.callout--note{border-left-color:rgb(var(--accent))}.callout--note .callout__title{color:rgb(var(--accent))}.callout--note .callout__icon{background:rgb(var(--accent) / .15);color:rgb(var(--accent))}.callout--tip{border-left-color:#10b981}.callout--tip .callout__title{color:#059669}.callout--tip .callout__icon{background:#10b9812e;color:#059669}html[data-theme=dark] .callout--tip .callout__title,html[data-theme=dark] .callout--tip .callout__icon{color:#34d399}.callout--warning{border-left-color:#f59e0b}.callout--warning .callout__title{color:#b45309}.callout--warning .callout__icon{background:#f59e0b2e;color:#b45309}html[data-theme=dark] .callout--warning .callout__title,html[data-theme=dark] .callout--warning .callout__icon{color:#fbbf24}.callout--unsourced{border-left-color:rgb(var(--fg-subtle));background:rgb(var(--bg))}.callout--unsourced .callout__title{color:rgb(var(--fg-muted))}.callout--unsourced .callout__icon{background:rgb(var(--fg-subtle) / .2);color:rgb(var(--fg-muted));font-family:Geist Mono Variable,Geist Mono,ui-monospace,monospace}
+</style><style>.prose a.repo-link,a.repo-link{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:.875rem;margin:1.75rem 0;padding:.875rem 1.125rem;border:1px solid rgb(var(--border));border-radius:.625rem;background:rgb(var(--bg-raised));color:rgb(var(--fg));text-decoration:none;transition:border-color .15s ease,transform .15s ease,background .15s ease}.prose a.repo-link:hover,a.repo-link:hover{border-color:rgb(var(--accent));transform:translateY(-1px);text-decoration:none}.repo-link__icon{color:rgb(var(--fg-muted));flex-shrink:0}.repo-link:hover .repo-link__icon{color:rgb(var(--fg))}.repo-link__body{min-width:0}.repo-link__name{font-family:ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,monospace;font-size:.95em;color:rgb(var(--fg));display:flex;align-items:baseline;flex-wrap:wrap;gap:.15rem}.repo-link__owner,.repo-link__sep{color:rgb(var(--fg-muted))}.repo-link__repo{color:rgb(var(--fg));font-weight:600}.repo-link__ref{margin-left:.4rem;color:rgb(var(--accent));font-size:.85em}.repo-link__desc{margin:.25rem 0 0;color:rgb(var(--fg-muted));font-size:.9em;line-height:1.45}.repo-link__path{margin-top:.25rem;font-family:ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,monospace;font-size:.82em;color:rgb(var(--fg-muted))}.repo-link__arrow{color:rgb(var(--fg-subtle));font-size:1.05em;transition:transform .15s ease,color .15s ease}.repo-link:hover .repo-link__arrow{color:rgb(var(--accent));transform:translate(2px,-2px)}
+</style><style>.url-block-wrapper[data-astro-cid-g2al5z6f]{margin:1.25rem 0}.url-block[data-astro-cid-g2al5z6f]{display:block;padding:.875rem 1rem;border:1px solid rgb(var(--border));background:rgb(var(--bg-raised));border-radius:.625rem;color:rgb(var(--fg));font-family:Geist Mono Variable,Geist Mono,ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;line-height:1.55;overflow-wrap:anywhere;word-break:normal}.url-block-caption[data-astro-cid-g2al5z6f]{margin:.5rem 0 0;color:rgb(var(--fg-muted));font-size:.85em;line-height:1.45}
+</style><style>.url-variants[data-astro-cid-vqq5ulpw]{--problem: 220, 38, 38;display:flex;flex-direction:column;gap:.5rem;margin:1.25rem 0}.variant[data-astro-cid-vqq5ulpw]{background:rgb(var(--bg-raised));border:1px solid rgb(var(--border));border-left:3px solid rgb(var(--accent));border-radius:.625rem;padding:.55rem .9rem}.variant[data-astro-cid-vqq5ulpw].is-problem{border-left-color:rgb(var(--problem))}.label[data-astro-cid-vqq5ulpw]{color:rgb(var(--accent))!important;font-size:.7rem!important;font-weight:700!important;text-transform:uppercase;letter-spacing:.05em;line-height:1.2;margin:0 0 .25rem!important}.variant[data-astro-cid-vqq5ulpw].is-problem .label[data-astro-cid-vqq5ulpw]{color:rgb(var(--problem))!important}.url[data-astro-cid-vqq5ulpw]{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:.78rem;word-break:break-all;line-height:1.45;color:rgb(var(--fg))!important;margin:0!important}.url[data-astro-cid-vqq5ulpw] mark[data-astro-cid-vqq5ulpw]{background:rgb(var(--accent) / .18);color:rgb(var(--accent-strong))!important;padding:0 3px;border-radius:3px;font-weight:600}.variant[data-astro-cid-vqq5ulpw].is-problem .url[data-astro-cid-vqq5ulpw] mark[data-astro-cid-vqq5ulpw]{background:rgb(var(--problem) / .18);color:rgb(var(--problem))!important;-webkit-text-decoration:underline wavy rgb(var(--problem));text-decoration:underline wavy rgb(var(--problem));text-underline-offset:2px}.note[data-astro-cid-vqq5ulpw]{font-size:.78rem!important;color:rgb(var(--fg-muted))!important;margin:.25rem 0 0!important;line-height:1.4}@media(prefers-color-scheme:dark){.url-variants[data-astro-cid-vqq5ulpw]{--problem: 248, 113, 113}}
+</style></head> <body class="flex min-h-svh flex-col"> <header data-pagefind-ignore="all" class="fixed inset-x-0 top-0 z-40 border-b border-border/70 bg-bg/75 backdrop-blur-xl supports-[backdrop-filter]:bg-bg/60"> <div class="mx-auto flex h-14 w-full max-w-content items-center justify-between gap-4 px-screen-px"> <!-- Brand --> <a href="/" class="inline-flex items-center" aria-label="charlie.tools — home"> <span class="group text-lg inline-flex items-baseline font-semibold leading-none" style="letter-spacing: -0.025em;"> <span class="text-fg transition-colors group-hover:text-accent">charlie</span><span class="inline-block text-accent transition-transform duration-300 group-hover:-translate-y-[1px]" style="font-size: 1.15em; line-height: 1; margin: 0 0.01em;" aria-hidden="true">.</span><span class="text-fg transition-colors group-hover:text-accent">tools</span> </span> </a> <!-- Nav + toggle --> <div class="flex items-center gap-1"> <nav aria-label="Primary" class="flex items-center"> <ul class="flex items-center"> <li> <a href="/posts" class="relative rounded-md px-3 py-1.5 text-sm transition-colors text-fg" aria-current="page"> Posts <span class="absolute inset-x-3 -bottom-[13px] h-px bg-accent" aria-hidden="true"></span> </a> </li><li> <a href="/tags" class="relative rounded-md px-3 py-1.5 text-sm transition-colors text-fg-muted hover:text-fg"> Tags  </a> </li><li> <a href="/about" class="relative rounded-md px-3 py-1.5 text-sm transition-colors text-fg-muted hover:text-fg"> About  </a> </li> </ul> </nav> <div class="mx-1.5 h-4 w-px bg-border-strong/70" aria-hidden="true"></div> <button type="button" id="search-trigger" aria-label="Open search" class="group inline-flex h-9 items-center gap-2.5 rounded-lg border border-border bg-bg-raised pl-3 pr-3.5 text-[0.875rem] text-fg-muted transition-colors hover:border-accent/50 hover:bg-bg hover:text-fg"> <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <circle cx="11" cy="11" r="7"></circle> <path d="m20 20-3.5-3.5"></path> </svg> <span>Search</span> </button> <dialog id="search-dialog" aria-label="Search posts" class="search-dialog"> <div class="search-header"> <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="search-header__icon"> <circle cx="11" cy="11" r="7"></circle> <path d="m20 20-3.5-3.5"></path> </svg> <input id="search-input" type="text" placeholder="Search…" autocomplete="off" spellcheck="false" aria-label="Search query" class="search-header__input"> </div> <div id="search-results" class="search-results" aria-live="polite"></div> </dialog>  <script type="module">let n=null,d=!1;async function g(){if(!(n||d)){d=!0;try{n=await new Function("url","return import(/* @vite-ignore */ url)")("/pagefind/pagefind.js"),n&&typeof n.init=="function"&&await n.init()}catch(e){console.warn("[search] pagefind index unavailable",e);const t=document.getElementById("search-results");t&&(t.innerHTML='<div class="search-empty">Search index is generated at build time — it goes live with the next deploy.</div>')}finally{d=!1}}}function u(e){return(e||"").replace(/[&<>"']/g,t=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[t])}function m(){const e=document.getElementById("search-dialog"),t=document.getElementById("search-trigger"),o=document.getElementById("search-input"),a=document.getElementById("search-results");if(!e||!t||!o||!a||t.__bound)return;t.__bound=!0;const s='<div class="search-empty">Type to search posts.</div>';a.innerHTML=s;const h=()=>{e.open||(e.showModal(),o.value="",a.innerHTML=s,o.focus(),g())},p=()=>{e.open&&e.close()};t.addEventListener("click",h),e.addEventListener("click",i=>{if(!e.open)return;const c=e.getBoundingClientRect();(i.clientY<c.top||i.clientY>c.bottom||i.clientX<c.left||i.clientX>c.right)&&p()});let f;o.addEventListener("input",()=>{clearTimeout(f);const i=o.value.trim();if(!i){a.innerHTML=s;return}f=window.setTimeout(async()=>{if(n||await g(),!n||typeof n.search!="function")return;const c=await n.search(i),l=await Promise.all(c.results.slice(0,8).map(r=>r.data()));if(l.length===0){a.innerHTML='<div class="search-empty">No matches for <strong style="color: rgb(var(--fg)); font-weight: 500">'+u(i)+"</strong>.</div>";return}a.innerHTML=l.map(r=>`
+            <a href="${u(r.url)}">
+              <div class="search-results__title">${u(r.meta?.title||r.url)}</div>
+              ${r.excerpt?`<div class="search-results__excerpt">${r.excerpt}</div>`:""}
+            </a>`).join("")},120)})}function y(){window.__searchShortcut||(window.__searchShortcut=!0,document.addEventListener("keydown",e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();const t=document.getElementById("search-dialog");if(!t)return;t.open?t.close():document.getElementById("search-trigger")?.click()}}))}m();y();document.addEventListener("astro:page-load",m);</script> <div class="mx-1.5 h-4 w-px bg-border-strong/70" aria-hidden="true"></div> <button type="button" id="theme-toggle" aria-label="Toggle color theme" class="group inline-flex h-8 w-8 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-bg-raised hover:text-fg"> <svg xmlns="http://www.w3.org/2000/svg" class="h-[15px] w-[15px] transition-transform duration-500 group-hover:rotate-45 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2"></path> <path d="M12 20v2"></path> <path d="m4.93 4.93 1.41 1.41"></path> <path d="m17.66 17.66 1.41 1.41"></path> <path d="M2 12h2"></path> <path d="M20 12h2"></path> <path d="m6.34 17.66-1.41 1.41"></path> <path d="m19.07 4.93-1.41 1.41"></path> </svg> <svg xmlns="http://www.w3.org/2000/svg" class="hidden h-[15px] w-[15px] transition-transform duration-500 group-hover:-rotate-12 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path> </svg> </button> <script>
+  (function () {
+    if (window.__themeToggleBound) return;
+    window.__themeToggleBound = true;
+    document.addEventListener('click', function (e) {
+      var target = e.target;
+      if (!(target instanceof Element)) return;
+      var btn = target.closest('#theme-toggle');
+      if (!btn) return;
+      var html = document.documentElement;
+      html.classList.add('theme-transition');
+      var current = html.getAttribute('data-theme');
+      var next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      try {
+        localStorage.setItem('theme', next);
+      } catch (err) {}
+      window.setTimeout(function () {
+        html.classList.remove('theme-transition');
+      }, 320);
+    });
+  })();
+</script> </div> </div> </header> <main id="main" class="relative mx-auto w-full max-w-content flex-1 px-screen-px pb-16">  <article class="mx-auto max-w-prose reveal"> <header class="mb-12 flex flex-col gap-5 sm:mb-16"> <div class="flex flex-wrap items-center gap-x-3 gap-y-1"> <time datetime="2026-04-29" class="meta"> April 29, 2026 </time> <span class="meta text-fg-subtle" aria-hidden="true">·</span> <span class="meta">13 min read</span>   </div> <h1 class="text-display-lg font-semibold tracking-tight text-fg"> Every link in your SharePoint tenant, sharing wrappers and all </h1> <p class="text-lg leading-relaxed text-fg-muted"> A tenant-wide scanner, a backlinks index, sharing-wrapper canonicalization, and one-button find-and-replace for every page and document. </p> <div class="border-t border-border/70 pt-5"> <ul class="flex flex-wrap gap-1.5"><li><a href="/tags/microsoft365" class="chip">Microsoft365</a></li><li><a href="/tags/spfx" class="chip">SPFx</a></li></ul> </div> </header> <div class="prose prose-lg max-w-none">  <p>Days before we cut over the first site in our rolling SharePoint migration, a review team we’d pulled together (senior leaders, project managers, content owners from across the org, and other volunteers) came back with a question. “Most of the links don’t work. Some point at SharePoint Online, some at the on-prem farm, some at totally broken paths. A lot of them load an ice cream cone or a bicycle. Does the image shown indicate different types of problems?”</p>
+<figure><style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var a=(s,i,o)=>{let r=async()=>{await(await s())()},t=typeof i.value=="object"?i.value:void 0,c={rootMargin:t==null?void 0:t.rootMargin},n=new IntersectionObserver(e=>{for(let l of e)if(l.isIntersecting){n.disconnect(),r();break}},c);for(let e of o.children)n.observe(e)};(self.Astro||(self.Astro={})).visible=a;window.dispatchEvent(new Event("astro:visible"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&&(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&&this.lastChild.nodeValue==="astro:end"&&(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&&await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="Z5lAoT" prefix="r2" component-url="/_astro/DemoPlayer.6-8m-H4y.js" component-export="DemoPlayer" renderer-url="/_astro/client.Blbc647A.js" props="{&quot;maxWidth&quot;:[0,720],&quot;frameStyle&quot;:[0,&quot;sp404&quot;],&quot;frames&quot;:[1,[[0,{&quot;src&quot;:[0,&quot;/blog/sharepoint-404-bicycle.svg?v=2&quot;],&quot;alt&quot;:[0,&quot;SharePoint 404 page with a bicycle illustration&quot;],&quot;ms&quot;:[0,2200],&quot;caption&quot;:[0,&quot;The file may have been renamed, deleted, moved to a different location or you do not have valid permissions.&quot;]}],[0,{&quot;src&quot;:[0,&quot;/blog/sharepoint-404-ice-cream-cone.svg?v=2&quot;],&quot;alt&quot;:[0,&quot;SharePoint 404 page with an ice cream cone illustration&quot;],&quot;ms&quot;:[0,2200],&quot;caption&quot;:[0,&quot;The file may have been renamed, deleted, moved to a different location or you do not have valid permissions.&quot;]}],[0,{&quot;src&quot;:[0,&quot;/blog/sharepoint-404-paper-airplane.svg?v=2&quot;],&quot;alt&quot;:[0,&quot;SharePoint 404 page with a paper airplane illustration&quot;],&quot;ms&quot;:[0,2200],&quot;caption&quot;:[0,&quot;The file may have been renamed, deleted, moved to a different location or you do not have valid permissions.&quot;]}]]]}" ssr client="visible" opts="{&quot;name&quot;:&quot;DemoPlayer&quot;,&quot;value&quot;:true}" await-children><div style="margin:1.5rem auto;display:block;max-width:720px"><div style="background:#292827;border-radius:0.625rem;overflow:hidden;border:1px solid rgb(var(--border))"><img src="/blog/sharepoint-404-bicycle.svg?v=2" alt="SharePoint 404 page with a bicycle illustration" style="width:100%;height:auto;max-width:100%;display:block;margin:0;background:#292827"/><div style="margin:0;padding:0 24px 24px 24px;font-family:&#x27;Segoe UI&#x27;, &#x27;Segoe UI Web (West European)&#x27;, -apple-system, BlinkMacSystemFont, Roboto, &#x27;Helvetica Neue&#x27;, sans-serif;font-size:14px;line-height:20px;color:#a19f9d;text-align:center;background:#292827"><div style="max-width:320px;margin-left:auto;margin-right:auto;text-wrap:balance">The file may have been renamed, deleted, moved to a different location or you do not have valid permissions.</div></div></div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:8px"><div style="display:flex;gap:4px"><button type="button" aria-label="Previous step" style="border:1px solid rgb(var(--border));background:rgb(var(--bg-raised));color:rgb(var(--fg));border-radius:6px;padding:4px 10px;cursor:pointer;font-size:14px;line-height:1">‹</button><button type="button" aria-label="Pause" style="border:1px solid rgb(var(--border));background:rgb(var(--bg-raised));color:rgb(var(--fg));border-radius:6px;padding:4px 10px;cursor:pointer;font-size:14px;line-height:1">❚❚</button><button type="button" aria-label="Next step" style="border:1px solid rgb(var(--border));background:rgb(var(--bg-raised));color:rgb(var(--fg));border-radius:6px;padding:4px 10px;cursor:pointer;font-size:14px;line-height:1">›</button></div><div style="display:flex;align-items:center"><button type="button" aria-label="Go to step 1" aria-current="step" style="width:8px;height:8px;border-radius:50%;border:none;padding:0;margin:0 4px;cursor:pointer;background:rgb(var(--accent))"></button><button type="button" aria-label="Go to step 2" style="width:8px;height:8px;border-radius:50%;border:none;padding:0;margin:0 4px;cursor:pointer;background:rgb(var(--border-strong))"></button><button type="button" aria-label="Go to step 3" style="width:8px;height:8px;border-radius:50%;border:none;padding:0;margin:0 4px;cursor:pointer;background:rgb(var(--border-strong))"></button></div></div></div><!--astro:end--></astro-island><figcaption style="margin-top:0.5rem;text-align:center;font-size:13;color:rgb(var(--fg-muted))"><p>Look closely: the bike has a flat tire, the ice cream cone has fallen on the ground, the paper airplane has crashed. Each illustration is itself a small failure. A nice touch.</p></figcaption></figure>
+<p>It does not. SharePoint’s not-found page rotates through a small set of friendly illustrations at random. The bicycle and the ice cream cone mean the same thing as the paper airplane. It was an earnest question, asked by people trying to make sense of a wall of broken links. The pattern was there, just not in the icons. It was hidden inside thousands of pages no one had read in three years. Roughly 40% of the links on the staged pages were broken.</p>
+<p>A SharePoint tenant migration breaks links you did not know existed. And then there are sharing links.</p>
+<p>Modern pages have hyperlinks in <code>&lt;a href&gt;</code> tags inside their canvas content. Classic pages have them in raw HTML field values. Word documents have them in <code>document.xml.rels</code>. Excel workbooks have them in <code>xl/worksheets/_rels/sheetN.xml.rels</code>. PowerPoint has them per slide. PDFs have them as <code>/Link</code> annotations with <code>/URI</code> actions. After a few years of normal tenant use, links accumulate by the tens of thousands. After a migration that consolidates hubs, renames site collections, or retires legacy hosts, a sizable fraction of them quietly turn into 404s. Nobody notices until somebody clicks one.</p>
+<p>To my knowledge, Microsoft does not ship a tenant-wide tool for finding any of them. They have search, site analytics, migration assessment. None of those tell you “this PDF in HR’s library has six external hyperlinks, two of them point at a host you decommissioned six months ago.” The closest first-party answer is a PowerShell script that walks one site at a time, which is fine for ten sites and unusable at five thousand.</p>
+<p>So I built one.</p>
+<a class="repo-link" href="https://github.com/charlievogt/spo-link-inventory" target="_blank" rel="noopener noreferrer" aria-label="Open charlievogt/spo-link-inventory on GitHub"> <svg class="repo-link__icon" viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true"> <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path> </svg> <div class="repo-link__body"> <div class="repo-link__name"> <span class="repo-link__owner">charlievogt</span> <span class="repo-link__sep">/</span> <strong class="repo-link__repo">spo-link-inventory</strong>  </div>   </div> <span class="repo-link__arrow" aria-hidden="true">↗</span> </a> 
+<h2 id="sharing-links-are-the-part-that-hurts"><a href="#sharing-links-are-the-part-that-hurts" class="heading-link">Sharing links are the part that hurts</a><a href="#sharing-links-are-the-part-that-hurts" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>When a user clicks “Share” on a file in a SharePoint site, the platform generates a wrapper URL. The most common form looks like this:</p>
+<div class="url-block-wrapper" data-astro-cid-g2al5z6f> <code class="url-block" data-astro-cid-g2al5z6f>https:/<wbr>/<wbr>tenant.sharepoint.com/<wbr>:b:/<wbr>r/<wbr>sites/<wbr>demo-hr/<wbr>Shared%20Documents/<wbr>handbook.pdf</code>  </div> 
+<p>The <code>/:b:/r/</code> prefix is the platform’s “browser viewer” sharing redirect. The path after it is the actual server-relative path of the file. These get pasted into modern pages, OneNote, Teams chats, intranet articles, and emails sent six years ago. They render fine as long as nothing changes. The moment the file moves, gets renamed, or the library gets reorganized, the link breaks. More subtly, the URL is <em>not</em> the canonical SharePoint URL for that file. Two pages that link to the same file will often have two completely different URLs in their HTML: one wrapped, one direct, and a naive find-and-replace will miss half of them.</p>
+<p>The canonical form is the library viewer URL:</p>
+<div class="url-block-wrapper" data-astro-cid-g2al5z6f> <code class="url-block" data-astro-cid-g2al5z6f>https:/<wbr>/<wbr>tenant.sharepoint.com/<wbr>sites/<wbr>demo-hr/<wbr>Shared%20Documents/<wbr>Forms/<wbr>AllItems.aspx?<wbr>id=<wbr>/<wbr>sites/<wbr>demo-hr/<wbr>Shared%20Documents/<wbr>handbook.pdf</code>  </div> 
+<p>That URL is stable, library-aware, and is what site owners actually want their pages to use. The tool resolves the <code>/:b:/r/</code> form into that canonical URL and offers a one-click “Fix this link” that rewrites the page in place. The same approach works for the Office Online viewer wrappers (<code>/:w:/r/</code> for Word, <code>/:x:/r/</code> for Excel, <code>/:p:/r/</code> for PowerPoint, <code>/:o:/r/</code> for OneNote): strip the prefix, decode the path, build the canonical URL.</p>
+<aside class="callout callout--note" role="note"> <div class="callout__head"> <span class="callout__icon" aria-hidden="true">i</span> <span class="callout__title">Note</span> </div> <div class="callout__body"> <p>I have not been able to find Microsoft documentation detailing how the path-segment codes work. <a href="https://sharepointcass.com/2021/03/11/what-do-the-parameters-in-a-shared-sharepoint-onedrive-link-mean/">Community reverse-engineering</a> maps the colon-bracketed letter to file type (<code>:w:</code> Word, <code>:x:</code> Excel, <code>:p:</code> PowerPoint, <code>:o:</code> OneNote, <code>:b:</code> PDF, <code>:f:</code> folder, <code>:u:</code> other) and the following segment to sharing scope (<code>r</code> and <code>s</code> for “uses existing permissions,” <code>g</code> for Anyone link, <code>t</code> for specific people, <code>u</code> for org-wide). Different community analyses occasionally disagree on edge cases. The labels in this post follow the most-cited convention.</p> </div> </aside> 
+<p>A second short-link form exists where the path itself is replaced by an opaque token. Microsoft documents this as the <a href="https://learn.microsoft.com/sharepoint/dev/spfx/shorter-share-link-format">shorter share link format</a>, the successor to the legacy <code>guestaccess.aspx?share=...</code> URLs. The trailing segment is a sharing token, not a server-relative path, so canonicalization is not a string operation. The supported way to resolve one is to encode the URL into a sharing token and call <a href="https://learn.microsoft.com/graph/api/shares-get?view=graph-rest-1.0"><code>GET /shares/{shareIdOrEncodedSharingUrl}</code></a> against Microsoft Graph, which returns the underlying <code>driveItem</code>. Microsoft’s docs explicitly call out applications that parse a URL to determine its sharing-link type as one of the scenarios the new format breaks, and recommend migrating to Graph rather than continuing to parse. The tool flags these in the inventory and leaves the resolution for a future iteration.</p>
+<aside class="callout callout--note" role="note"> <div class="callout__head"> <span class="callout__icon" aria-hidden="true">i</span> <span class="callout__title">Note</span> </div> <div class="callout__body"> <p>Which form a wrapper takes depends on the sharing scope the user picked. A <a href="https://learn.microsoft.com/answers/questions/83ec9adf-8381-421e-b749-ef8f35721617/sharepoint-url-format-guest-token-when-sharing-in">Microsoft Q&amp;A</a> confirms that “People with existing access” links carry the file’s server-relative path (the form the tool can canonicalize as a string), while default “Copy link,” “Anyone with the link,” “Specific people,” and “People in your organization” all carry an opaque token. Path-bearing forms dominated the pages I scanned, mostly because internal links inside SharePoint pages tend to be inserted through the page editor (which produces canonical paths) or shared with audiences that already have access. Token-bearing forms cluster around files explicitly shared via a scope that grants new access. I can’t find a Microsoft-published  breakdown of which gestures produce which form.</p> </div> </aside> 
+<h2 id="i-did-not-know-how-many-ways-the-same-file-could-be-linked-to"><a href="#i-did-not-know-how-many-ways-the-same-file-could-be-linked-to" class="heading-link">I did not know how many ways the same file could be linked to</a><a href="#i-did-not-know-how-many-ways-the-same-file-could-be-linked-to" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>The sharing wrapper is one form. It is not the only form. Pick a single PDF in a single library and look at every link in the tenant that points at it. A short, non-exhaustive list of the variants I found, with the distinguishing fragment highlighted:</p>
+<div class="url-variants" data-astro-cid-vqq5ulpw> <div class="variant" data-astro-cid-vqq5ulpw> <div class="label" data-astro-cid-vqq5ulpw>Direct server-relative path</div> <div class="url" data-astro-cid-vqq5ulpw> https://tenant.sharepoint.com/sites/x<mark data-astro-cid-vqq5ulpw>/Shared%20Documents/handbook.pdf</mark> </div> <div class="note" data-astro-cid-vqq5ulpw>The path itself. Stable until something is renamed or moved.</div> </div><div class="variant" data-astro-cid-vqq5ulpw> <div class="label" data-astro-cid-vqq5ulpw>Library viewer (canonical form)</div> <div class="url" data-astro-cid-vqq5ulpw> https://tenant.sharepoint.com/sites/x/Shared%20Documents/Forms/AllItems.aspx<mark data-astro-cid-vqq5ulpw>?id=/sites/x/Shared%20Documents/handbook.pdf</mark> </div> <div class="note" data-astro-cid-vqq5ulpw>Library-aware. The form admins should standardize on.</div> </div><div class="variant" data-astro-cid-vqq5ulpw> <div class="label" data-astro-cid-vqq5ulpw>Browser-viewer sharing wrapper</div> <div class="url" data-astro-cid-vqq5ulpw> https://tenant.sharepoint.com<mark data-astro-cid-vqq5ulpw>/:b:/r/</mark>sites/x/Shared%20Documents/handbook.pdf </div> <div class="note" data-astro-cid-vqq5ulpw>&quot;People with existing access&quot; sharing link. Path is canonicalizable as a string.</div> </div><div class="variant" data-astro-cid-vqq5ulpw> <div class="label" data-astro-cid-vqq5ulpw>Opaque-token sharing wrapper</div> <div class="url" data-astro-cid-vqq5ulpw> https://tenant.sharepoint.com<mark data-astro-cid-vqq5ulpw>/:b:/g/EaBcDef...</mark>?e=... </div> <div class="note" data-astro-cid-vqq5ulpw>Sharing token, not a server-relative path. Resolve via Microsoft Graph /shares.</div> </div><div class="variant" data-astro-cid-vqq5ulpw> <div class="label" data-astro-cid-vqq5ulpw>GUID-based Doc.aspx redirect</div> <div class="url" data-astro-cid-vqq5ulpw> https://tenant.sharepoint.com/sites/x/<mark data-astro-cid-vqq5ulpw>_layouts/15/Doc.aspx?sourcedoc=</mark>... </div> <div class="note" data-astro-cid-vqq5ulpw>Legacy SharePoint redirect. The server resolves the GUID to the real file.</div> </div><div class="variant" data-astro-cid-vqq5ulpw> <div class="label" data-astro-cid-vqq5ulpw>Library viewer with leftover #search fragment</div> <div class="url" data-astro-cid-vqq5ulpw> https://tenant.sharepoint.com/sites/x/Shared%20Documents/Forms/AllItems.aspx?id=/sites/x/Shared%20Documents/handbook.pdf<mark data-astro-cid-vqq5ulpw>#search=handbook</mark> </div> <div class="note" data-astro-cid-vqq5ulpw>Pasted out of an SP search results page. Harmless on-prem; loads the wrong file on SPO.</div> </div> </div> 
+<p>All point at the same PDF. All show up in real pages.</p>
+<p>The last one took the longest to figure out. A real example, anonymized only by tenant:</p>
+<div class="url-variants" data-astro-cid-vqq5ulpw> <div class="variant is-problem" data-astro-cid-vqq5ulpw> <div class="label" data-astro-cid-vqq5ulpw>In the wild, broken by the migration</div> <div class="url" data-astro-cid-vqq5ulpw> https://tenant.sharepoint.com/sites/online-training-manual/Shared%20Documents/Forms/AllItems.aspx?id=/sites/online-training-manual/Shared%20Documents/EFT.pdf&amp;parent=/sites/online-training-manual/Shared%20Documents<mark data-astro-cid-vqq5ulpw>#search=eft</mark> </div> <div class="note" data-astro-cid-vqq5ulpw>Somebody searched for the file in SharePoint Server, copied the URL out of the browser bar, and pasted it into a page. Harmless on-prem; loads the wrong file on SPO.</div> </div> </div> 
+<p>The <code>#search=eft</code> is the fingerprint. The link “works” in the sense that something renders. It just is not what the author thought they were linking to. Hundreds of those scattered across the tenant, all from one bad habit nobody knew was bad.</p>
+<p>A naive find-and-replace catches one or two of these forms and misses the rest. A regex over <code>&lt;a href&gt;</code> values is worse: it matches a literal string, and the same file produces dozens of literal strings. The classifier’s job is to recognize all of these as references to the same canonical resource and rewrite them to one stable URL. Getting that right took longer than writing the scanner did.</p>
+<h2 id="what-the-tool-actually-does"><a href="#what-the-tool-actually-does" class="heading-link">What the tool actually does</a><a href="#what-the-tool-actually-does" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Once you have a list of every variant, you need a place to put them and a way to act on them. The result is an Azure Function plus an SPFx web part.</p>
+<p>The Function is a tenant-wide scanner. It walks every site collection in scope, pulls every modern page, opens every Office document and PDF, extracts every hyperlink, classifies and normalizes each one, and writes the lot into Azure Table Storage with two indexes: by source page, and by target URL.</p>
+<p>Every link is tagged with one of a handful of classes: <code>office-online</code>, <code>sharing-link</code>, <code>spo-internal</code>, <code>malformed-spo-link</code>, <code>onprem</code>, <code>relative</code>. Each class has its own canonicalization rule. The “Fix this link” button uses the canonical form to rewrite the page so all references to a given file converge on the same URL across the tenant.</p>
+<p>The web part is the UI a tenant admin uses. Search the inventory. Pick a URL. See every page and every paragraph that references it. Click any row to see the classification, the canonical resolution, and the diff that will be applied if you click “Fix this link.”</p>
+<h2 id="end-to-end-in-a-few-clicks"><a href="#end-to-end-in-a-few-clicks" class="heading-link">End-to-end in a few clicks</a><a href="#end-to-end-in-a-few-clicks" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<astro-island uid="264QVE" prefix="r3" component-url="/_astro/DemoPlayer.6-8m-H4y.js" component-export="DemoPlayer" renderer-url="/_astro/client.Blbc647A.js" props="{&quot;frames&quot;:[1,[[0,{&quot;src&quot;:[0,&quot;/blog/demo-01-scan-running.png?v=2&quot;],&quot;alt&quot;:[0,&quot;Scan in progress&quot;],&quot;ms&quot;:[0,2000],&quot;caption&quot;:[0,&quot;Kick off a tenant scan from the admin web part.&quot;]}],[0,{&quot;src&quot;:[0,&quot;/blog/demo-02-scan-complete.png?v=2&quot;],&quot;alt&quot;:[0,&quot;Scan complete with results&quot;],&quot;ms&quot;:[0,2200],&quot;caption&quot;:[0,&quot;Inventory loads. Pages and documents merge into one view.&quot;]}],[0,{&quot;src&quot;:[0,&quot;/blog/demo-03-filtered.png?v=2&quot;],&quot;alt&quot;:[0,&quot;Filtered to sharing-link rows&quot;],&quot;ms&quot;:[0,2200],&quot;caption&quot;:[0,&quot;Filter to sharing-link rows to see the wrappers.&quot;]}],[0,{&quot;src&quot;:[0,&quot;/blog/demo-04-detail-panel.png?v=2&quot;],&quot;alt&quot;:[0,&quot;Detail panel for a single link&quot;],&quot;ms&quot;:[0,2400],&quot;caption&quot;:[0,&quot;Open a row: source page, classification, canonical URL.&quot;]}],[0,{&quot;src&quot;:[0,&quot;/blog/demo-05-fr-dialog.png?v=2&quot;],&quot;alt&quot;:[0,&quot;Find &amp; Replace dialog&quot;],&quot;ms&quot;:[0,2400],&quot;caption&quot;:[0,&quot;Click \&quot;Fix this link\&quot;. The Find/Replace dialog pre-fills the canonical URL.&quot;]}],[0,{&quot;src&quot;:[0,&quot;/blog/demo-06-fr-preview.png?v=2&quot;],&quot;alt&quot;:[0,&quot;Preview of the replacement&quot;],&quot;ms&quot;:[0,2400],&quot;caption&quot;:[0,&quot;Preview the diff before applying.&quot;]}],[0,{&quot;src&quot;:[0,&quot;/blog/demo-07-fr-applied.png?v=2&quot;],&quot;alt&quot;:[0,&quot;Replacement applied&quot;],&quot;ms&quot;:[0,2800],&quot;caption&quot;:[0,&quot;Apply. The row updates and deep-links to the patched page.&quot;]}]]]}" ssr client="visible" opts="{&quot;name&quot;:&quot;DemoPlayer&quot;,&quot;value&quot;:true}" await-children><div style="margin:1.5rem auto;display:block"><img src="/blog/demo-01-scan-running.png?v=2" alt="Scan in progress" style="width:100%;height:auto;max-width:100%;max-height:none;object-fit:contain;display:block;border-radius:0.625rem;border:1px solid rgb(var(--border));margin:0"/><div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:8px"><div style="display:flex;gap:4px"><button type="button" aria-label="Previous step" style="border:1px solid rgb(var(--border));background:rgb(var(--bg-raised));color:rgb(var(--fg));border-radius:6px;padding:4px 10px;cursor:pointer;font-size:14px;line-height:1">‹</button><button type="button" aria-label="Pause" style="border:1px solid rgb(var(--border));background:rgb(var(--bg-raised));color:rgb(var(--fg));border-radius:6px;padding:4px 10px;cursor:pointer;font-size:14px;line-height:1">❚❚</button><button type="button" aria-label="Next step" style="border:1px solid rgb(var(--border));background:rgb(var(--bg-raised));color:rgb(var(--fg));border-radius:6px;padding:4px 10px;cursor:pointer;font-size:14px;line-height:1">›</button></div><div style="display:flex;align-items:center"><button type="button" aria-label="Go to step 1" aria-current="step" style="width:8px;height:8px;border-radius:50%;border:none;padding:0;margin:0 4px;cursor:pointer;background:rgb(var(--accent))"></button><button type="button" aria-label="Go to step 2" style="width:8px;height:8px;border-radius:50%;border:none;padding:0;margin:0 4px;cursor:pointer;background:rgb(var(--border-strong))"></button><button type="button" aria-label="Go to step 3" style="width:8px;height:8px;border-radius:50%;border:none;padding:0;margin:0 4px;cursor:pointer;background:rgb(var(--border-strong))"></button><button type="button" aria-label="Go to step 4" style="width:8px;height:8px;border-radius:50%;border:none;padding:0;margin:0 4px;cursor:pointer;background:rgb(var(--border-strong))"></button><button type="button" aria-label="Go to step 5" style="width:8px;height:8px;border-radius:50%;border:none;padding:0;margin:0 4px;cursor:pointer;background:rgb(var(--border-strong))"></button><button type="button" aria-label="Go to step 6" style="width:8px;height:8px;border-radius:50%;border:none;padding:0;margin:0 4px;cursor:pointer;background:rgb(var(--border-strong))"></button><button type="button" aria-label="Go to step 7" style="width:8px;height:8px;border-radius:50%;border:none;padding:0;margin:0 4px;cursor:pointer;background:rgb(var(--border-strong))"></button></div></div><div aria-live="polite" style="margin-top:8px;font-size:14px;color:rgb(var(--fg-muted));min-height:1.4em">Step 1 of 7: Kick off a tenant scan from the admin web part.</div></div><!--astro:end--></astro-island>
+<p>Run a scan. Inventory loads. Drill into a <code>sharing-link</code> row. The detail panel shows the wrapper URL, the canonical URL it resolves to, and a “Fix this link” button. Click it, preview the diff, apply. The result row deep-links to the patched page so the change is verifiable in one click. The “rewrite all of these” version is the same flow against many rows at once.</p>
+<h2 id="the-backlinks-index-is-the-other-half-of-the-product"><a href="#the-backlinks-index-is-the-other-half-of-the-product" class="heading-link">The backlinks index is the other half of the product</a><a href="#the-backlinks-index-is-the-other-half-of-the-product" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Given a URL, “where is this referenced” is the question you want answered after a migration.</p>
+<p>“I’m about to retire <code>legacy-portal.example.com</code>. Who is going to scream when I do?” Pull up the URL, see 137 references across 23 sites, send the list to the affected site owners before flipping the DNS.</p>
+<p>“This PDF was just removed. Who linked to it?” Same query, answered in seconds instead of by asking around.</p>
+<p>“This intranet section is being deprecated. Which other pages still point at it?” Backlinks index, page count, done.</p>
+<p>The scanner runs daily on the schedule a tenant admin sets. The index is fresh enough that “what links to what” is always answerable within a day.</p>
+<h2 id="find-and-replace-with-the-audit-log-intact"><a href="#find-and-replace-with-the-audit-log-intact" class="heading-link">Find-and-replace, with the audit log intact</a><a href="#find-and-replace-with-the-audit-log-intact" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Once you have the inventory, rewriting is the natural next step. Pick a URL, pick its replacement, kick off a job. The job rewrites modern pages by PATCHing each page’s <code>CanvasContent1</code> field through the Site Pages list-item REST endpoint. Document rows are deliberately read-only.</p>
+<aside class="callout callout--note" role="note"> <div class="callout__head"> <span class="callout__icon" aria-hidden="true">i</span> <span class="callout__title">Note</span> </div> <div class="callout__body"> <p>PDF link annotations live inside indirect objects, and the file’s <a href="https://pdfa.org/resource/iso-32000-1/">cross-reference (xref) table</a> indexes those objects by absolute byte offset from the start of the file. Changing a URL inside an annotation usually changes the size of its containing object, which invalidates every xref entry after it. The xref table and trailer have to be rebuilt. Doing that safely without re-saving the entire PDF is fragile in a way modern pages are not. PDF rows surface in the inventory and stay read-only.</p> </div> </aside> 
+<p>The interesting design detail: writes go through user on-behalf-of, not the app’s permissions. The web part hands the calling user’s SPFx token to the Function. The Function exchanges it for a delegated token. Writes happen as that user.</p>
+<p>So the SharePoint version history shows the actual user who changed each page. Not “the app rewrote 4,000 pages last Tuesday.” A tenant admin running find-and-replace gets to write everywhere. A site owner running it is scoped to the sites they own. Compliance teams care about this in a way they do not care about most things, and app-only writes would have erased the trail of who did what.</p>
+<h2 id="the-web-part-exists-because-powershell-does-not"><a href="#the-web-part-exists-because-powershell-does-not" class="heading-link">The web part exists because PowerShell does not</a><a href="#the-web-part-exists-because-powershell-does-not" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>An Azure Function and an SPFx web part to do what could have been a PowerShell script. PowerShell does not handle five thousand site collections gracefully, and the people who care most about tenant link rot are not going to run PowerShell anyway. Site owners want a search box. Tenant admins want a “rewrite all of these” button. Compliance teams want the audit trail intact. The web part is the part that gets the tool used.</p>
+<h2 id="which-copy-is-the-real-one"><a href="#which-copy-is-the-real-one" class="heading-link">Which copy is the real one</a><a href="#which-copy-is-the-real-one" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>The inventory shipped. The review team came back with a different question. They were now staring at libraries that had multiple copies of the same policy PDF and they wanted to know which one to keep. Some pairs were byte-identical. Some were not, but probably should have been. Some were genuinely different documents that happened to share a filename.</p>
+<p>There are five distinct flavors of “is this the same document?”, and the obvious flavor is the least useful. That’s the next post.</p>
+<p>The migration finished. The tool still finds things. Handle the next fire that comes up.</p>  </div> <nav aria-label="Post navigation" class="mt-20 grid gap-3 border-t border-border/70 pt-10 sm:grid-cols-2"><a href="/posts/oauth-server-before-this-post" class="card group flex flex-col gap-1.5 p-5 sm:col-start-1"><span class="meta-sm flex items-center gap-1.5 text-fg-muted transition-colors group-hover:text-accent"><span aria-hidden="true">←</span><span>Older</span></span><span class="font-medium text-fg transition-colors group-hover:text-accent">I wrote an OAuth server before I wrote this post</span></a><span class="hidden sm:block"></span></nav> <section data-pagefind-ignore="all" class="mt-20 border-t border-border/70 pt-10"> <h2 class="meta-sm mb-4 text-fg-muted">Comments &amp; reactions</h2> <div class="giscus-mount"></div> </section> <script>(function(){const mapping = "pathname";
+
+  // --- Giscus bootstrap ---------------------------------------------------
+  // Mounts the Giscus client script into .giscus-mount with the current
+  // site theme baked in (prevents flash-of-wrong-theme).
+
+  function giscusTheme() {
+    return document.documentElement.getAttribute('data-theme') === 'dark'
+      ? 'noborder_dark'
+      : 'noborder_light';
+  }
+
+  function mountGiscus() {
+    const mount = document.querySelector('.giscus-mount');
+    if (!mount) return;
+    // Already mounted? (e.g., after Astro view-transition swap)
+    if (mount.querySelector('iframe.giscus-frame, script[src*="giscus"]'))
+      return;
+
+    const s = document.createElement('script');
+    s.src = 'https://giscus.app/client.js';
+    s.dataset.repo = 'charlievogt/charlie.tools';
+    s.dataset.repoId = 'R_kgDOSKys8g';
+    s.dataset.category = 'Comments';
+    s.dataset.categoryId = 'DIC_kwDOSKys8s4C7kX3';
+    s.dataset.mapping = mapping;
+    s.dataset.strict = '0';
+    s.dataset.reactionsEnabled = '1';
+    s.dataset.emitMetadata = '0';
+    s.dataset.inputPosition = 'bottom';
+    s.dataset.theme = giscusTheme();
+    s.dataset.lang = 'en';
+    s.dataset.loading = 'lazy';
+    s.crossOrigin = 'anonymous';
+    s.async = true;
+    mount.appendChild(s);
+  }
+
+  // --- Theme sync ---------------------------------------------------------
+  function pushThemeToGiscus() {
+    const iframe = document.querySelector('iframe.giscus-frame');
+    if (!iframe || !iframe.contentWindow) return;
+    iframe.contentWindow.postMessage(
+      { giscus: { setConfig: { theme: giscusTheme() } } },
+      'https://giscus.app',
+    );
+  }
+
+  // Only bind the observer once per page session.
+  if (!window.__giscusThemeBound) {
+    window.__giscusThemeBound = true;
+    new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        if (m.attributeName === 'data-theme') {
+          pushThemeToGiscus();
+        }
+      }
+    }).observe(document.documentElement, { attributes: true });
+  }
+
+  // Mount now + on every view-transition navigation.
+  mountGiscus();
+  document.addEventListener('astro:page-load', mountGiscus);
+})();</script> </article>  </main> <footer data-pagefind-ignore="all" class="relative mt-32 border-t border-border/70"> <div class="mx-auto flex w-full max-w-content flex-col items-start justify-between gap-6 px-screen-px py-10 sm:flex-row sm:items-center"> <div class="flex items-baseline gap-3"> <span class="group text-sm inline-flex items-baseline font-semibold leading-none" style="letter-spacing: -0.025em;"> <span class="text-fg transition-colors group-hover:text-accent">charlie</span><span class="inline-block text-accent transition-transform duration-300 group-hover:-translate-y-[1px]" style="font-size: 1.15em; line-height: 1; margin: 0 0.01em;" aria-hidden="true">.</span><span class="text-fg transition-colors group-hover:text-accent">tools</span> </span> <span class="meta-sm">&copy; 2026</span> </div> <nav aria-label="Secondary"> <ul class="flex items-center gap-5"> <li> <a href="/rss.xml" class="meta transition-colors hover:text-fg">
+RSS
+</a> </li> <li> <a href="/sitemap-index.xml" class="meta transition-colors hover:text-fg">
+Sitemap
+</a> </li> <li> <a href="https://github.com/charlievogt" rel="noopener" class="meta transition-colors hover:text-fg">
+GitHub
+</a> </li> </ul> </nav> </div> </footer> <script>
+      // Heading-link / heading-anchor click handling.
+      //
+      // - Intercepts both the wrapping title link AND the # icon so we
+      //   can use history.replaceState() instead of letting the browser's
+      //   default navigation push a history entry for every section.
+      //   Result: back button returns to the page the visitor came from,
+      //   not to the previous anchor on the same page.
+      //
+      // - preventDefault here does NOT affect right-click / tap-and-hold
+      //   context menus, so the browser's native "Copy Link" menu for
+      //   the title link still works.
+      //
+      // - When the user clicks the # icon specifically, also copy the
+      //   fully-resolved URL to clipboard and flash the copied state.
+      (function () {
+        if (window.__headingLinkBound) return;
+        window.__headingLinkBound = true;
+
+        document.addEventListener('click', function (e) {
+          // Let modifier-clicks behave normally (open in new tab, etc.)
+          if (
+            e.defaultPrevented ||
+            e.button !== 0 ||
+            e.metaKey ||
+            e.ctrlKey ||
+            e.shiftKey ||
+            e.altKey
+          )
+            return;
+
+          var t = e.target;
+          if (!(t instanceof Element)) return;
+          var link = t.closest('a.heading-link, a.heading-anchor');
+          if (!link) return;
+
+          var href = link.getAttribute('href');
+          if (!href || href.charAt(0) !== '#') return;
+
+          var id = decodeURIComponent(href.slice(1));
+          var target = document.getElementById(id);
+          if (!target) return;
+
+          // Block default nav so it doesn't push a history entry
+          e.preventDefault();
+
+          // Replace the current URL so the section is shareable, but
+          // never push — anchor hopping shouldn't clutter history.
+          try {
+            history.replaceState(null, '', href);
+          } catch (_) {}
+
+          // Smooth scroll to the heading (respecting reduced motion)
+          var reduce =
+            window.matchMedia &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          target.scrollIntoView({
+            behavior: reduce ? 'auto' : 'smooth',
+            block: 'start',
+          });
+
+          // If the # icon was the thing clicked, copy + flash
+          if (link.classList.contains('heading-anchor')) {
+            var url = new URL(href, window.location.href).href;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(url).catch(function () {});
+            }
+            link.setAttribute('data-copied', 'true');
+            window.setTimeout(function () {
+              link.removeAttribute('data-copied');
+            }, 1400);
+          }
+        });
+      })();
+
+      // Smooth-scroll to the anchor when a URL with a hash is loaded.
+      // Browsers normally jump instantly on initial navigation; this
+      // intercepts, resets to the top, and then animates to the target.
+      // Respects prefers-reduced-motion.
+      (function () {
+        function smoothScrollToHash() {
+          var hash = window.location.hash;
+          if (!hash || hash.length < 2) return;
+          if (
+            window.matchMedia &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          )
+            return;
+          var id;
+          try {
+            id = decodeURIComponent(hash.slice(1));
+          } catch (_) {
+            id = hash.slice(1);
+          }
+          var target = document.getElementById(id);
+          if (!target) return;
+          // Instant reset to counteract the browser's auto-jump
+          window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+          // Smooth scroll after two frames so layout has stabilized
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+          });
+        }
+        if (!window.__hashSmoothScroll) {
+          window.__hashSmoothScroll = true;
+          if (document.readyState === 'complete') {
+            smoothScrollToHash();
+          } else {
+            window.addEventListener('load', smoothScrollToHash);
+          }
+          // Handle view-transition navigations too
+          document.addEventListener('astro:page-load', smoothScrollToHash);
+        }
+      })();
+
+      // Heading-anchor enhancement for non-MDX pages (.astro files like
+      // About). Mirrors what the rehype plugin does for markdown posts:
+      // wrap text in <a.heading-link>, append <a.heading-anchor> with
+      // the same SVG icon. Idempotent — skips headings that already
+      // have the markup.
+      (function () {
+        if (window.__headingEnhanceBound) return;
+        window.__headingEnhanceBound = true;
+
+        var ICON_SVG =
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+          '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>' +
+          '<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>' +
+          '</svg>';
+
+        function slugify(s) {
+          return (s || '')
+            .toLowerCase()
+            .trim()
+            .replace(/['’`"]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        }
+
+        function enhance(h) {
+          // Already wrapped (rehype handled it on a markdown page)?
+          if (h.querySelector(':scope > a.heading-link')) return;
+
+          if (!h.id) {
+            var slug = slugify(h.textContent);
+            if (!slug) return;
+            // Avoid id collision
+            var base = slug;
+            var n = 2;
+            while (
+              document.getElementById(slug) &&
+              document.getElementById(slug) !== h
+            ) {
+              slug = base + '-' + n++;
+            }
+            h.id = slug;
+          }
+
+          var hash = '#' + h.id;
+          var link = document.createElement('a');
+          link.href = hash;
+          link.className = 'heading-link';
+          while (h.firstChild) link.appendChild(h.firstChild);
+          h.appendChild(link);
+
+          var anchor = document.createElement('a');
+          anchor.href = hash;
+          anchor.className = 'heading-anchor';
+          anchor.setAttribute('aria-label', 'Copy link to this section');
+          anchor.tabIndex = -1;
+          anchor.innerHTML = ICON_SVG;
+          h.appendChild(anchor);
+        }
+
+        function enhanceAll() {
+          var headings = document.querySelectorAll(
+            '.prose h2, .prose h3, .prose h4, .prose h5, .prose h6',
+          );
+          for (var i = 0; i < headings.length; i++) enhance(headings[i]);
+        }
+
+        enhanceAll();
+        document.addEventListener('astro:page-load', enhanceAll);
+      })();
+    </script> </body> </html>
