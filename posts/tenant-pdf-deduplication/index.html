@@ -1,0 +1,1053 @@
+<!DOCTYPE html><html lang="en"> <head><!-- Charset, viewport, theme --><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="Astro v5.18.1"><meta name="color-scheme" content="light dark"><!-- Run before first paint to avoid flash of wrong theme. Re-runs on
+     every Astro view-transition navigation so the theme attribute is
+     reasserted onto the live document. --><script data-astro-rerun>
+  (function () {
+    try {
+      var stored = localStorage.getItem('theme');
+      var prefersDark = window.matchMedia(
+        '(prefers-color-scheme: dark)',
+      ).matches;
+      var theme =
+        stored === 'dark' || stored === 'light'
+          ? stored
+          : prefersDark
+            ? 'dark'
+            : 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    } catch (e) {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  })();
+</script><!-- Carry the current theme onto the incoming document before Astro's
+     ClientRouter swaps it in, so view-transition navigation can't show
+     a flash of the wrong theme between pages. --><script>
+  (function () {
+    if (window.__charlieThemePersistBound) return;
+    window.__charlieThemePersistBound = true;
+    document.addEventListener('astro:before-swap', function (e) {
+      var current = document.documentElement.getAttribute('data-theme');
+      if (current && e && e.newDocument) {
+        e.newDocument.documentElement.setAttribute('data-theme', current);
+      }
+    });
+  })();
+</script><!-- Canonical & favicons --><link rel="canonical" href="https://charlie.tools/posts/tenant-pdf-deduplication/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="sitemap" href="/sitemap-index.xml"><link rel="alternate" type="application/rss+xml" title="charlie.tools" href="https://charlie.tools/rss.xml"><!-- Primary meta --><title>Finding duplicate, near-duplicate, and diverged documents across a SharePoint tenant — charlie.tools</title><meta name="title" content="Finding duplicate, near-duplicate, and diverged documents across a SharePoint tenant — charlie.tools"><meta name="description" content="Five distinct ways the same document shows up across a tenant: exact, stale, diverged forks, near-duplicates, and same-name collisions. Hash plus version-history walk plus SimHash."><meta name="author" content="Charlie Vogt"><meta name="keywords" content="Microsoft365, SPFx"><!-- Open Graph --><meta property="og:type" content="article"><meta property="og:url" content="https://charlie.tools/posts/tenant-pdf-deduplication/"><meta property="og:title" content="Finding duplicate, near-duplicate, and diverged documents across a SharePoint tenant — charlie.tools"><meta property="og:description" content="Five distinct ways the same document shows up across a tenant: exact, stale, diverged forks, near-duplicates, and same-name collisions. Hash plus version-history walk plus SimHash."><meta property="og:image" content="https://charlie.tools/social/tenant-pdf-deduplication-hero.png"><meta property="og:site_name" content="charlie.tools"><meta property="article:published_time" content="2026-05-01T00:00:00.000Z"><meta property="article:tag" content="Microsoft365"><meta property="article:tag" content="SPFx"><!-- Twitter --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:url" content="https://charlie.tools/posts/tenant-pdf-deduplication/"><meta name="twitter:title" content="Finding duplicate, near-duplicate, and diverged documents across a SharePoint tenant — charlie.tools"><meta name="twitter:description" content="Five distinct ways the same document shows up across a tenant: exact, stale, diverged forks, near-duplicates, and same-name collisions. Hash plus version-history walk plus SimHash."><meta name="twitter:image" content="https://charlie.tools/social/tenant-pdf-deduplication-hero.png"><!-- Cloudflare Web Analytics — production builds only. The preview server
+     runs `astro dev` so import.meta.env.PROD is false there and the beacon
+     is omitted, keeping preview traffic out of the dashboard. --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;b0656b73b611467e98011b1577c1c873&quot;}"></script><!-- Umami self-hosted analytics — production only, same reason. Runs on a
+     first-party subdomain so default ad blockers don't drop it the way they
+     drop cloudflareinsights.com. --><script defer src="https://a.charlie.tools/u" data-website-id="479b3fda-d983-49ba-b889-3e2cfaaa4879"></script><!-- Umami session recorder — 100% sample for now while traffic is low,
+     moderate masking, 5min cap. Dial sample-rate down once volume grows.
+     PROD only so preview traffic isn't recorded. --><script defer src="https://a.charlie.tools/recorder.js" data-website-id="479b3fda-d983-49ba-b889-3e2cfaaa4879" data-sample-rate="1" data-mask-level="moderate" data-max-duration="300000"></script><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.BFfqj1ee.js"></script><link rel="stylesheet" href="/_astro/_slug_.CQnHOXT-.css"><script type="module" src="/_astro/page.IvKoM_B8.js"></script><style>.callout{margin:2rem 0;padding:1rem 1.25rem 1.1rem;border:1px solid rgb(var(--border));border-left-width:3px;border-radius:.625rem;background:rgb(var(--bg-raised));font-size:.95em}.callout__head{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;font-family:Geist Mono Variable,Geist Mono,ui-monospace,monospace;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase}.callout__icon{display:inline-flex;width:1.15rem;height:1.15rem;align-items:center;justify-content:center;border-radius:9999px;font-size:.75rem;font-weight:700;line-height:1}.callout__body{color:rgb(var(--fg) / .9);line-height:1.6}.callout__body>:first-child{margin-top:0}.callout__body>:last-child{margin-bottom:0}.callout--note{border-left-color:rgb(var(--accent))}.callout--note .callout__title{color:rgb(var(--accent))}.callout--note .callout__icon{background:rgb(var(--accent) / .15);color:rgb(var(--accent))}.callout--tip{border-left-color:#10b981}.callout--tip .callout__title{color:#059669}.callout--tip .callout__icon{background:#10b9812e;color:#059669}html[data-theme=dark] .callout--tip .callout__title,html[data-theme=dark] .callout--tip .callout__icon{color:#34d399}.callout--warning{border-left-color:#f59e0b}.callout--warning .callout__title{color:#b45309}.callout--warning .callout__icon{background:#f59e0b2e;color:#b45309}html[data-theme=dark] .callout--warning .callout__title,html[data-theme=dark] .callout--warning .callout__icon{color:#fbbf24}.callout--unsourced{border-left-color:rgb(var(--fg-subtle));background:rgb(var(--bg))}.callout--unsourced .callout__title{color:rgb(var(--fg-muted))}.callout--unsourced .callout__icon{background:rgb(var(--fg-subtle) / .2);color:rgb(var(--fg-muted));font-family:Geist Mono Variable,Geist Mono,ui-monospace,monospace}
+</style><style>.prose a.repo-link,a.repo-link{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:.875rem;margin:1.75rem 0;padding:.875rem 1.125rem;border:1px solid rgb(var(--border));border-radius:.625rem;background:rgb(var(--bg-raised));color:rgb(var(--fg));text-decoration:none;transition:border-color .15s ease,transform .15s ease,background .15s ease}.prose a.repo-link:hover,a.repo-link:hover{border-color:rgb(var(--accent));transform:translateY(-1px);text-decoration:none}.repo-link__icon{color:rgb(var(--fg-muted));flex-shrink:0}.repo-link:hover .repo-link__icon{color:rgb(var(--fg))}.repo-link__body{min-width:0}.repo-link__name{font-family:ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,monospace;font-size:.95em;color:rgb(var(--fg));display:flex;align-items:baseline;flex-wrap:wrap;gap:.15rem}.repo-link__owner,.repo-link__sep{color:rgb(var(--fg-muted))}.repo-link__repo{color:rgb(var(--fg));font-weight:600}.repo-link__ref{margin-left:.4rem;color:rgb(var(--accent));font-size:.85em}.repo-link__desc{margin:.25rem 0 0;color:rgb(var(--fg-muted));font-size:.9em;line-height:1.45}.repo-link__path{margin-top:.25rem;font-family:ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,monospace;font-size:.82em;color:rgb(var(--fg-muted))}.repo-link__arrow{color:rgb(var(--fg-subtle));font-size:1.05em;transition:transform .15s ease,color .15s ease}.repo-link:hover .repo-link__arrow{color:rgb(var(--accent));transform:translate(2px,-2px)}
+</style></head> <body class="flex min-h-svh flex-col"> <header data-pagefind-ignore="all" class="fixed inset-x-0 top-0 z-40 border-b border-border/70 bg-bg/75 backdrop-blur-xl supports-[backdrop-filter]:bg-bg/60"> <div class="mx-auto flex h-14 w-full max-w-content items-center justify-between gap-4 px-screen-px"> <!-- Brand --> <a href="/" class="inline-flex items-center" aria-label="charlie.tools — home"> <span class="group text-lg inline-flex items-baseline font-semibold leading-none" style="letter-spacing: -0.025em;"> <span class="text-fg transition-colors group-hover:text-accent">charlie</span><span class="inline-block text-accent transition-transform duration-300 group-hover:-translate-y-[1px]" style="font-size: 1.15em; line-height: 1; margin: 0 0.01em;" aria-hidden="true">.</span><span class="text-fg transition-colors group-hover:text-accent">tools</span> </span> </a> <!-- Nav + toggle --> <div class="flex items-center gap-1"> <nav aria-label="Primary" class="hidden items-center sm:flex"> <ul class="flex items-center"> <li> <a href="/posts" class="relative inline-flex items-center rounded-md px-3 py-1.5 text-sm transition-colors text-fg" aria-current="page"> Posts <span class="absolute inset-x-3 -bottom-[13px] h-px bg-accent" aria-hidden="true"></span> </a> </li><li> <a href="/tags" class="relative inline-flex items-center rounded-md px-3 py-1.5 text-sm transition-colors text-fg-muted hover:text-fg"> Tags  </a> </li><li> <a href="/about" class="relative inline-flex items-center rounded-md px-3 py-1.5 text-sm transition-colors text-fg-muted hover:text-fg"> About  </a> </li> </ul> </nav> <div class="contents sm:hidden" data-astro-cid-6aabv5oc> <button type="button" id="mobile-menu-trigger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu-panel" class="group inline-flex h-8 w-8 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-bg-raised hover:text-fg" data-astro-cid-6aabv5oc> <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" class="mobile-menu-icon" data-astro-cid-6aabv5oc> <line class="mobile-menu-icon__line mobile-menu-icon__line--top" x1="2" y1="5" x2="14" y2="5" data-astro-cid-6aabv5oc></line> <line class="mobile-menu-icon__line mobile-menu-icon__line--mid" x1="2" y1="8" x2="14" y2="8" data-astro-cid-6aabv5oc></line> <line class="mobile-menu-icon__line mobile-menu-icon__line--bot" x1="2" y1="11" x2="14" y2="11" data-astro-cid-6aabv5oc></line> </svg> </button> <div id="mobile-menu-panel" role="dialog" aria-modal="true" aria-label="Site navigation" class="mobile-menu-panel" hidden data-astro-cid-6aabv5oc> <nav aria-label="Mobile navigation" data-astro-cid-6aabv5oc> <ol class="mobile-menu-list" data-astro-cid-6aabv5oc> <li class="mobile-menu-item" style="--i: 0" data-astro-cid-6aabv5oc> <a href="/posts" aria-current="page" class="mobile-menu-link mobile-menu-link--active" data-astro-cid-6aabv5oc> <span class="mobile-menu-num" data-astro-cid-6aabv5oc> 01 </span> <span class="mobile-menu-label" data-astro-cid-6aabv5oc>Posts</span> <span class="mobile-menu-arrow" aria-hidden="true" data-astro-cid-6aabv5oc>
+→
+</span> </a> </li><li class="mobile-menu-item" style="--i: 1" data-astro-cid-6aabv5oc> <a href="/tags" class="mobile-menu-link" data-astro-cid-6aabv5oc> <span class="mobile-menu-num" data-astro-cid-6aabv5oc> 02 </span> <span class="mobile-menu-label" data-astro-cid-6aabv5oc>Tags</span> <span class="mobile-menu-arrow" aria-hidden="true" data-astro-cid-6aabv5oc>
+→
+</span> </a> </li><li class="mobile-menu-item" style="--i: 2" data-astro-cid-6aabv5oc> <a href="/about" class="mobile-menu-link" data-astro-cid-6aabv5oc> <span class="mobile-menu-num" data-astro-cid-6aabv5oc> 03 </span> <span class="mobile-menu-label" data-astro-cid-6aabv5oc>About</span> <span class="mobile-menu-arrow" aria-hidden="true" data-astro-cid-6aabv5oc>
+→
+</span> </a> </li> </ol> </nav> </div> </div>  <script>
+  (function () {
+    if (window.__mobileMenuBound) return;
+    window.__mobileMenuBound = true;
+
+    function getEls() {
+      return {
+        trigger: document.getElementById('mobile-menu-trigger'),
+        panel: document.getElementById('mobile-menu-panel'),
+      };
+    }
+
+    function open() {
+      var els = getEls();
+      if (!els.trigger || !els.panel) return;
+      els.panel.removeAttribute('hidden');
+      // Two RAFs so the browser commits the unhidden state before
+      // applying the data-open transition. Single RAF flickers in Safari.
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          els.panel.setAttribute('data-open', '');
+        });
+      });
+      els.trigger.setAttribute('aria-expanded', 'true');
+      els.trigger.setAttribute('aria-label', 'Close menu');
+    }
+
+    function close() {
+      var els = getEls();
+      if (!els.trigger || !els.panel) return;
+      els.panel.removeAttribute('data-open');
+      els.trigger.setAttribute('aria-expanded', 'false');
+      els.trigger.setAttribute('aria-label', 'Open menu');
+      // Wait for the panel transition (220ms) before [hidden] so the
+      // outgoing animation actually plays.
+      window.setTimeout(function () {
+        if (els.panel.getAttribute('aria-expanded') !== 'true') {
+          els.panel.setAttribute('hidden', '');
+        }
+      }, 240);
+    }
+
+    function isOpen() {
+      var t = document.getElementById('mobile-menu-trigger');
+      return !!(t && t.getAttribute('aria-expanded') === 'true');
+    }
+
+    document.addEventListener('click', function (e) {
+      var t = e.target;
+      if (!(t instanceof Element)) return;
+
+      // Trigger toggles the panel.
+      if (t.closest('#mobile-menu-trigger')) {
+        if (isOpen()) close();
+        else open();
+        return;
+      }
+
+      // A link inside the panel: let the navigation happen, then close.
+      // (View transitions will continue to render the panel briefly,
+      //  but `astro:before-swap` below handles the cross-page case.)
+      if (t.closest('#mobile-menu-panel a')) {
+        close();
+        return;
+      }
+
+      // Click anywhere outside the panel while it's open: close.
+      if (isOpen() && !t.closest('#mobile-menu-panel')) {
+        close();
+      }
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && isOpen()) close();
+    });
+
+    // Close on view-transition navigation so the next page renders clean.
+    document.addEventListener('astro:before-swap', function () {
+      if (isOpen()) close();
+    });
+
+    // Close if the viewport grows past `sm` while the panel is open.
+    var mq = window.matchMedia('(min-width: 640px)');
+    var handleMq = function (e) {
+      if (e.matches && isOpen()) close();
+    };
+    if (mq.addEventListener) mq.addEventListener('change', handleMq);
+    else if (mq.addListener) mq.addListener(handleMq);
+  })();
+</script> <div class="hidden mx-1.5 h-4 w-px bg-border-strong/70 sm:block" aria-hidden="true"></div> <button type="button" id="search-trigger" aria-label="Open search" class="group inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-bg-raised text-fg-muted transition-colors hover:border-accent/50 hover:bg-bg hover:text-fg sm:h-9 sm:w-auto sm:gap-2.5 sm:justify-start sm:rounded-lg sm:pl-3 sm:pr-3.5 sm:text-[0.875rem]"> <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <circle cx="11" cy="11" r="7"></circle> <path d="m20 20-3.5-3.5"></path> </svg> <span class="hidden sm:inline">Search</span> </button> <dialog id="search-dialog" aria-label="Search posts" class="search-dialog"> <div class="search-header"> <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="search-header__icon"> <circle cx="11" cy="11" r="7"></circle> <path d="m20 20-3.5-3.5"></path> </svg> <input id="search-input" type="text" placeholder="Search…" autocomplete="off" spellcheck="false" aria-label="Search query" class="search-header__input"> </div> <div id="search-results" class="search-results" aria-live="polite"></div> </dialog>  <script type="module">let n=null,d=!1;async function g(){if(!(n||d)){d=!0;try{n=await new Function("url","return import(/* @vite-ignore */ url)")("/pagefind/pagefind.js"),n&&typeof n.init=="function"&&await n.init()}catch(e){console.warn("[search] pagefind index unavailable",e);const t=document.getElementById("search-results");t&&(t.innerHTML=`<div class="search-empty">Search isn't loaded right now. Browse the <a href="/posts">all posts</a> page instead.</div>`)}finally{d=!1}}}function u(e){return(e||"").replace(/[&<>"']/g,t=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[t])}function p(){const e=document.getElementById("search-dialog"),t=document.getElementById("search-trigger"),o=document.getElementById("search-input"),s=document.getElementById("search-results");if(!e||!t||!o||!s||t.__bound)return;t.__bound=!0;const c='<div class="search-empty">Type to search posts.</div>';s.innerHTML=c;const h=()=>{e.open||(e.showModal(),o.value="",s.innerHTML=c,o.focus(),g())},m=()=>{e.open&&e.close()};t.addEventListener("click",h),e.addEventListener("click",r=>{if(!e.open)return;const a=e.getBoundingClientRect();(r.clientY<a.top||r.clientY>a.bottom||r.clientX<a.left||r.clientX>a.right)&&m()});let f;o.addEventListener("input",()=>{clearTimeout(f);const r=o.value.trim();if(!r){s.innerHTML=c;return}f=window.setTimeout(async()=>{if(n||await g(),!n||typeof n.search!="function")return;const a=await n.search(r),l=await Promise.all(a.results.slice(0,8).map(i=>i.data()));if(l.length===0){s.innerHTML='<div class="search-empty">No matches for <strong style="color: rgb(var(--fg)); font-weight: 500">'+u(r)+"</strong>.</div>";return}s.innerHTML=l.map(i=>`
+            <a href="${u(i.url)}">
+              <div class="search-results__title">${u(i.meta?.title||i.url)}</div>
+              ${i.excerpt?`<div class="search-results__excerpt">${i.excerpt}</div>`:""}
+            </a>`).join("")},120)})}function y(){window.__searchShortcut||(window.__searchShortcut=!0,document.addEventListener("keydown",e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();const t=document.getElementById("search-dialog");if(!t)return;t.open?t.close():document.getElementById("search-trigger")?.click()}}))}p();y();document.addEventListener("astro:page-load",p);</script> <div class="hidden mx-1.5 h-4 w-px bg-border-strong/70 sm:block" aria-hidden="true"></div> <button type="button" id="theme-toggle" aria-label="Toggle color theme" class="group inline-flex h-8 w-8 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-bg-raised hover:text-fg"> <svg xmlns="http://www.w3.org/2000/svg" class="h-[15px] w-[15px] transition-transform duration-500 group-hover:rotate-45 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2"></path> <path d="M12 20v2"></path> <path d="m4.93 4.93 1.41 1.41"></path> <path d="m17.66 17.66 1.41 1.41"></path> <path d="M2 12h2"></path> <path d="M20 12h2"></path> <path d="m6.34 17.66-1.41 1.41"></path> <path d="m19.07 4.93-1.41 1.41"></path> </svg> <svg xmlns="http://www.w3.org/2000/svg" class="hidden h-[15px] w-[15px] transition-transform duration-500 group-hover:-rotate-12 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path> </svg> </button> <script>
+  (function () {
+    if (window.__themeToggleBound) return;
+    window.__themeToggleBound = true;
+    document.addEventListener('click', function (e) {
+      var target = e.target;
+      if (!(target instanceof Element)) return;
+      var btn = target.closest('#theme-toggle');
+      if (!btn) return;
+      var html = document.documentElement;
+      html.classList.add('theme-transition');
+      var current = html.getAttribute('data-theme');
+      var next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      try {
+        localStorage.setItem('theme', next);
+      } catch (err) {}
+      window.setTimeout(function () {
+        html.classList.remove('theme-transition');
+      }, 320);
+    });
+  })();
+</script> </div> </div> </header> <main id="main" class="relative mx-auto w-full max-w-content flex-1 px-screen-px pb-16">  <article class="mx-auto max-w-prose reveal"> <header class="mb-12 flex flex-col gap-5 sm:mb-16"> <div class="flex flex-wrap items-center gap-x-3 gap-y-1"> <time datetime="2026-05-01" class="meta"> May 1, 2026 </time> <span class="meta text-fg-subtle" aria-hidden="true">·</span> <span class="meta">9 min read</span>   </div> <h1 class="text-display-lg font-semibold tracking-tight text-fg"> Finding duplicate, near-duplicate, and diverged documents across a SharePoint tenant </h1> <p class="text-lg leading-relaxed text-fg-muted"> Five distinct ways the same document shows up across a tenant: exact, stale, diverged forks, near-duplicates, and same-name collisions. Hash plus version-history walk plus SimHash. </p> <div class="border-t border-border/70 pt-5"> <ul class="flex flex-wrap gap-1.5"><li><a href="/tags/microsoft365" class="chip">Microsoft365</a></li><li><a href="/tags/spfx" class="chip">SPFx</a></li></ul> </div> </header> <div class="prose prose-lg max-w-none">  <p>A site owner asked me which copy of a particular policy PDF was the real one. Six libraries had a file with the same name. Two had the same byte content. Two more were almost-identical but slightly older. The last two were materially different documents that happened to share a filename. The honest answer was “I don’t know yet, give me a few hours.”</p>
+<style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var a=(s,i,o)=>{let r=async()=>{await(await s())()},t=typeof i.value=="object"?i.value:void 0,c={rootMargin:t==null?void 0:t.rootMargin},n=new IntersectionObserver(e=>{for(let l of e)if(l.isIntersecting){n.disconnect(),r();break}},c);for(let e of o.children)n.observe(e)};(self.Astro||(self.Astro={})).visible=a;window.dispatchEvent(new Event("astro:visible"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&&(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&&this.lastChild.nodeValue==="astro:end"&&(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&&await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="1DnRPS" prefix="r1" component-url="/_astro/DedupConstellation.B_4Q4RnG.js" component-export="DedupConstellation" renderer-url="/_astro/client.Blbc647A.js" props="{}" ssr client="visible" opts="{&quot;name&quot;:&quot;DedupConstellation&quot;,&quot;value&quot;:true}" await-children><figure class="dedup" data-active="idle" role="img" aria-label="A central canonical document at /sites/marketing/ with five peer copies in other libraries, each illustrating one duplicate-detection category: exact, stale, diverged, near-duplicate, and same-name."><header class="dedup__header"><span class="dedup__kicker">[ DEDUP CONSTELLATION ·<!-- --> <!-- -->start<!-- --> ]</span><p class="dedup__headline">Same filename. Six libraries.<!-- --> <span class="dedup__em">Five distinct problems.</span></p></header><div class="dedup__stage"><svg viewBox="0 0 400 400" class="dedup__svg" aria-hidden="true"><circle cx="200" cy="200" r="110" class="dedup__ring"></circle><g class="dedup__hub"><circle cx="200" cy="200" r="28" class="dedup__hub-halo"></circle><circle cx="200" cy="200" r="14" class="dedup__hub-ring"></circle><circle cx="200" cy="200" r="6" class="dedup__hub-core"></circle></g></svg><div class="dedup__hub-label"><span class="dedup__hub-label-kind">original.docx</span><span class="dedup__hub-label-site">/sites/<!-- -->marketing<!-- -->/</span></div></div><div class="dedup__stepper"><p class="dedup__description" aria-live="polite"><span class="dedup__description-text">Six SharePoint libraries hold a file called original.docx. Each leg below shows how a copy ended up in its category.</span></p><div class="dedup__nav"><div class="dedup__transport"><button type="button" class="dedup__btn" disabled="" aria-label="Previous category">←</button><button type="button" class="dedup__btn dedup__btn--play" aria-label="Pause auto-play" aria-pressed="false"><svg viewBox="0 0 14 14" width="14" height="14" fill="currentColor" aria-hidden="true" focusable="false"><rect x="4" y="2.8" width="1.7" height="8.4" rx="0.4"></rect><rect x="8.3" y="2.8" width="1.7" height="8.4" rx="0.4"></rect></svg></button><button type="button" class="dedup__btn" aria-label="Next category">→</button></div><div class="dedup__progress" role="group" aria-label="Progress through categories"><button type="button" class="dedup__dot  " aria-label="Show Exact"></button><button type="button" class="dedup__dot  " aria-label="Show Stale"></button><button type="button" class="dedup__dot  " aria-label="Show Diverged"></button><button type="button" class="dedup__dot  " aria-label="Show Near-dup"></button><button type="button" class="dedup__dot  " aria-label="Show Same-name"></button></div></div></div><style>
+        .dedup {
+          margin: 2rem 0;
+          font-family:
+            'Geist Variable',
+            'Geist',
+            ui-sans-serif,
+            system-ui,
+            sans-serif;
+        }
+
+        .dedup__header {
+          margin-bottom: 1rem;
+        }
+
+        .dedup__kicker {
+          display: block;
+          font-family:
+            'Geist Mono Variable',
+            'Geist Mono',
+            ui-monospace,
+            monospace;
+          font-size: 0.6875rem;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: rgb(var(--fg-subtle));
+        }
+
+        .dedup__headline {
+          margin: 0.45rem 0 0;
+          font-size: clamp(1.0625rem, 3.4vw, 1.3125rem);
+          font-weight: 600;
+          line-height: 1.35;
+          letter-spacing: -0.012em;
+          color: rgb(var(--fg));
+        }
+
+        .dedup__em {
+          color: rgb(var(--accent));
+        }
+        @supports (
+          (background-clip: text) or (-webkit-background-clip: text)
+        ) {
+          .dedup__em {
+            background: linear-gradient(
+              135deg,
+              rgb(var(--accent)) 0%,
+              rgb(var(--accent-glow)) 100%
+            );
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+          }
+        }
+
+        .dedup__stage {
+          position: relative;
+          width: 100%;
+          max-width: 440px;
+          margin: 0 auto;
+          aspect-ratio: 1 / 1;
+        }
+
+        .dedup__svg {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          overflow: visible;
+        }
+
+        .dedup__ring {
+          fill: none;
+          stroke: rgb(var(--border));
+          stroke-width: 1;
+          stroke-dasharray: 1 4;
+          opacity: 0.6;
+        }
+
+        .dedup__hub-halo {
+          fill: rgb(var(--accent) / 0.16);
+          transform-origin: 200px 200px;
+          animation: dedup-hub-breathe 3.2s ease-in-out infinite;
+        }
+
+        .dedup__hub-ring {
+          fill: none;
+          stroke: rgb(var(--accent));
+          stroke-width: 1.5;
+        }
+
+        .dedup__hub-core {
+          fill: rgb(var(--accent));
+        }
+
+        /* Hub edit pulse — when STALE or DIVERGED is the active leg,
+           this fires after the copy lands to indicate "the canonical
+           was edited." */
+        .dedup__hub-edit-pulse {
+          fill: none;
+          stroke: rgb(var(--accent));
+          stroke-width: 2;
+          opacity: 0;
+          transform-origin: 200px 200px;
+          animation: dedup-edit-pulse 1.6s cubic-bezier(0.4, 0, 0.2, 1)
+            4500ms forwards;
+        }
+
+        /* === SETTLED-LEG STYLES (final state, no animation). ===
+           These apply to legs the reader has already advanced past.
+           The line is fully drawn, in its category-specific pattern. */
+        .dedup__line {
+          fill: none;
+          stroke: rgb(var(--fg-muted));
+          stroke-width: 1.4;
+          stroke-linecap: round;
+          opacity: 0.85;
+        }
+        .dedup__spoke--exact .dedup__line {
+          stroke: rgb(var(--accent));
+          stroke-width: 1.7;
+          opacity: 1;
+        }
+        .dedup__spoke--stale .dedup__line {
+          stroke-dasharray: 5 4;
+        }
+        .dedup__spoke--samename .dedup__line {
+          stroke-dasharray: 1 4;
+          opacity: 0.6;
+        }
+
+        .dedup__node {
+          fill: rgb(var(--bg));
+          stroke: rgb(var(--fg-muted));
+          stroke-width: 1.4;
+        }
+        .dedup__node-core {
+          fill: rgb(var(--fg-muted));
+        }
+        .dedup__spoke--exact .dedup__node {
+          stroke: rgb(var(--accent));
+          stroke-width: 1.7;
+        }
+        .dedup__spoke--exact .dedup__node-core {
+          fill: rgb(var(--accent));
+        }
+
+        /* === ACTIVE-LEG ANIMATION TIMINGS ===
+           Per-leg phases (timings are absolute from leg-start = 0):
+             0.0s  line starts drawing, with stroke-dashoffset
+             1.5s  line fully drawn
+             1.6s  copy pulse leaves the hub
+             3.6s  copy pulse arrives at peer + fades
+             3.6s  peer dot fades in
+             4.0s  peer label + filename fade in
+             4.5s  per-leg "what happened" beat fires (stale/diverged/near)
+             6.0s  leg fully settled
+           SAME-NAME is shorter: no copy pulse; peer just fades in. */
+
+        /* Active line: starts hidden + dashed-as-line, then draws in. */
+        .dedup__spoke.is-active .dedup__line {
+          stroke-dasharray: 100;
+          stroke-dashoffset: 100;
+          animation: dedup-line-draw 1.5s cubic-bezier(0.4, 0, 0.2, 1)
+            forwards;
+        }
+
+        /* After the line draws, transition to the category pattern. */
+        .dedup__spoke--stale.is-active .dedup__line {
+          animation:
+            dedup-line-draw 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards,
+            dedup-pattern-stale 0ms 4500ms forwards;
+        }
+        .dedup__spoke--samename.is-active .dedup__line {
+          animation:
+            dedup-line-draw 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards,
+            dedup-pattern-samename 0ms 1500ms forwards;
+        }
+
+        /* Active node + label — fade in after the copy lands. */
+        .dedup__spoke.is-active .dedup__node {
+          opacity: 0;
+          animation: dedup-fade-in 0.5s ease 3600ms forwards;
+        }
+        .dedup__spoke.is-active .dedup__node-core {
+          opacity: 0;
+          animation: dedup-fade-in 0.5s ease 3700ms forwards;
+        }
+
+        /* SAME-NAME special case: no copy from canonical. The line is
+           dotted from the start (the "false equivalence" pattern) and
+           the peer simply fades in at its location. */
+        .dedup__spoke--samename.is-active .dedup__line {
+          stroke-dasharray: 1 4;
+          stroke-dashoffset: 0;
+          opacity: 0;
+          animation: dedup-fade-in 0.9s ease 1800ms forwards;
+        }
+        .dedup__spoke--samename.is-active .dedup__node {
+          opacity: 0;
+          animation: dedup-fade-in 0.6s ease 800ms forwards;
+        }
+        .dedup__spoke--samename.is-active .dedup__node-core {
+          opacity: 0;
+          animation: dedup-fade-in 0.6s ease 1000ms forwards;
+        }
+
+        /* Edit pulse at peer for DIVERGED + NEAR. */
+        .dedup__edit-pulse {
+          fill: none;
+          stroke: rgb(var(--accent));
+          stroke-width: 2;
+          opacity: 0;
+          transform-origin: center;
+          animation: dedup-edit-pulse 1.6s cubic-bezier(0.4, 0, 0.2, 1)
+            4500ms forwards;
+        }
+
+        /* Copy pulse — small accent-bordered "document" marker. */
+        .dedup__copy {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          width: 14px;
+          height: 18px;
+          background: rgb(var(--bg-raised));
+          border: 1.5px solid rgb(var(--accent));
+          border-radius: 2px;
+          box-shadow: 0 0 0 3px rgb(var(--accent) / 0.16);
+          transform: translate(-50%, -50%) scale(0.55);
+          opacity: 0;
+          pointer-events: none;
+          z-index: 2;
+          animation: dedup-copy 2s cubic-bezier(0.4, 0, 0.2, 1) 1600ms
+            forwards;
+        }
+        .dedup__copy::after {
+          content: '';
+          position: absolute;
+          inset: 3px 3px 4px 3px;
+          background:
+            linear-gradient(
+              to bottom,
+              rgb(var(--accent)) 0 1px,
+              transparent 1px 4px,
+              rgb(var(--accent)) 4px 5px,
+              transparent 5px 8px,
+              rgb(var(--accent)) 8px 9px,
+              transparent 9px 100%
+            );
+        }
+
+        /* === LABELS === */
+        .dedup__hub-label,
+        .dedup__label {
+          position: absolute;
+          transform: translate(-50%, -50%);
+          display: flex;
+          flex-direction: column;
+          gap: 0.05rem;
+          line-height: 1.15;
+          white-space: nowrap;
+          text-align: center;
+          font-family:
+            'Geist Mono Variable',
+            'Geist Mono',
+            ui-monospace,
+            monospace;
+        }
+
+        .dedup__hub-label {
+          left: 50%;
+          top: 50%;
+          margin-top: 2.6rem;
+        }
+
+        .dedup__hub-label-kind {
+          font-size: 0.75rem;
+          font-weight: 600;
+          letter-spacing: 0.02em;
+          color: rgb(var(--accent));
+        }
+
+        .dedup__hub-label-site {
+          font-size: 0.6875rem;
+          color: rgb(var(--fg-muted));
+        }
+
+        .dedup__label.is-settled {
+          opacity: 1;
+        }
+        .dedup__label.is-active {
+          opacity: 0;
+          animation: dedup-label-in 0.5s ease 4000ms forwards;
+        }
+        .dedup__label--left {
+          text-align: right;
+          transform: translate(-100%, -50%);
+        }
+        .dedup__label--right {
+          text-align: left;
+          transform: translate(0, -50%);
+        }
+        .dedup__label--center {
+          text-align: center;
+          transform: translate(-50%, -100%);
+          margin-top: -0.25rem;
+        }
+
+        .dedup__label-kind {
+          display: inline-flex;
+          align-items: baseline;
+          gap: 0.3rem;
+          font-size: 0.6875rem;
+          font-weight: 600;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          color: rgb(var(--fg));
+        }
+        .dedup__label--left .dedup__label-kind {
+          flex-direction: row-reverse;
+        }
+
+        .dedup__label-glyph {
+          font-size: 0.95rem;
+          line-height: 1;
+          color: rgb(var(--fg-muted));
+          font-variant-numeric: tabular-nums;
+        }
+
+        .dedup__label-site {
+          font-size: 0.6875rem;
+          color: rgb(var(--fg-subtle));
+          letter-spacing: 0.02em;
+        }
+        .dedup__label-site--short {
+          display: none;
+        }
+
+        .dedup__label-filename {
+          font-size: 0.625rem;
+          color: rgb(var(--fg-muted));
+          letter-spacing: 0;
+          max-width: 14ch;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .dedup__label--left .dedup__label-filename,
+        .dedup__label--right .dedup__label-filename {
+          max-width: none;
+        }
+
+        /* === STEPPER === */
+        .dedup__stepper {
+          margin-top: 1.25rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.875rem;
+          align-items: center;
+        }
+
+        .dedup__description {
+          margin: 0;
+          max-width: 36rem;
+          text-align: center;
+          font-size: 0.9375rem;
+          line-height: 1.5;
+          color: rgb(var(--fg-muted));
+        }
+
+        .dedup__description-tag {
+          display: inline-block;
+          font-family:
+            'Geist Mono Variable',
+            'Geist Mono',
+            monospace;
+          font-size: 0.6875rem;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          padding: 0.15rem 0.5rem;
+          margin-right: 0.4rem;
+          border-radius: 4px;
+          color: rgb(var(--accent));
+          background: rgb(var(--accent) / 0.08);
+        }
+
+        .dedup__description-text {
+          color: rgb(var(--fg-muted));
+        }
+
+        .dedup__nav {
+          display: flex;
+          align-items: center;
+          gap: 1.25rem;
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+
+        .dedup__transport {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+        }
+
+        .dedup__btn {
+          width: 2rem;
+          height: 2rem;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid rgb(var(--border));
+          background: rgb(var(--bg-raised));
+          color: rgb(var(--fg));
+          border-radius: 999px;
+          cursor: pointer;
+          font-size: 0.875rem;
+          line-height: 1;
+          padding: 0;
+          transition:
+            color 160ms ease,
+            border-color 160ms ease,
+            background-color 160ms ease;
+        }
+        .dedup__btn:hover:not(:disabled),
+        .dedup__btn:focus-visible:not(:disabled) {
+          border-color: rgb(var(--accent) / 0.55);
+          color: rgb(var(--accent));
+          background: rgb(var(--accent) / 0.06);
+          outline: none;
+        }
+        .dedup__btn:disabled {
+          opacity: 0.35;
+          cursor: not-allowed;
+        }
+        /* Play/pause is the visual anchor of the transport row. */
+        .dedup__btn--play {
+          width: 2.4rem;
+          height: 2.4rem;
+          background: rgb(var(--accent));
+          border-color: rgb(var(--accent));
+          color: rgb(var(--bg));
+          font-size: 0.9375rem;
+        }
+        .dedup__btn--play:hover:not(:disabled),
+        .dedup__btn--play:focus-visible:not(:disabled) {
+          background: rgb(var(--accent-strong));
+          border-color: rgb(var(--accent-strong));
+          color: rgb(var(--bg));
+        }
+
+        .dedup__progress {
+          display: inline-flex;
+          gap: 0.4rem;
+          padding: 0 0.25rem;
+        }
+        .dedup__dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          padding: 0;
+          margin: 0;
+          border: none;
+          background: rgb(var(--border-strong));
+          cursor: pointer;
+          transition: background-color 160ms ease, transform 160ms ease;
+        }
+        .dedup__dot.is-on {
+          background: rgb(var(--accent) / 0.5);
+        }
+        .dedup__dot.is-active {
+          background: rgb(var(--accent));
+          transform: scale(1.25);
+        }
+
+        .dedup__reset {
+          background: none;
+          border: 0;
+          padding: 0;
+          color: rgb(var(--fg-subtle));
+          font-family:
+            'Geist Mono Variable',
+            'Geist Mono',
+            monospace;
+          font-size: 0.6875rem;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          cursor: pointer;
+        }
+        .dedup__reset:hover,
+        .dedup__reset:focus-visible {
+          color: rgb(var(--accent));
+          outline: none;
+        }
+
+        /* === KEYFRAMES === */
+        @keyframes dedup-fade-in {
+          to { opacity: 1; }
+        }
+        @keyframes dedup-label-in {
+          from { opacity: 0; filter: blur(2px); }
+          to   { opacity: 1; filter: blur(0); }
+        }
+        @keyframes dedup-line-draw {
+          to { stroke-dashoffset: 0; }
+        }
+        @keyframes dedup-pattern-stale {
+          to { stroke-dasharray: 5 4; }
+        }
+        @keyframes dedup-pattern-samename {
+          to { stroke-dasharray: 1 4; }
+        }
+        @keyframes dedup-hub-breathe {
+          0%, 100% { transform: scale(1); opacity: 0.55; }
+          50% { transform: scale(1.06); opacity: 0.85; }
+        }
+        @keyframes dedup-edit-pulse {
+          0%   { opacity: 0; transform: scale(0.8); }
+          25%  { opacity: 1; transform: scale(1.4); }
+          75%  { opacity: 0.4; transform: scale(2.2); }
+          100% { opacity: 0; transform: scale(2.6); }
+        }
+        @keyframes dedup-copy {
+          0% {
+            left: 50%; top: 50%;
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.55);
+          }
+          12% {
+            left: 50%; top: 50%;
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+          }
+          88% {
+            left: var(--end-x); top: var(--end-y);
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+          }
+          100% {
+            left: var(--end-x); top: var(--end-y);
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.85);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .dedup__hub-halo {
+            animation: none !important;
+            opacity: 0.55;
+            transform: scale(1);
+          }
+          .dedup__line,
+          .dedup__node,
+          .dedup__node-core,
+          .dedup__label,
+          .dedup__edit-pulse,
+          .dedup__hub-edit-pulse,
+          .dedup__copy {
+            animation-duration: 0.01ms !important;
+            animation-delay: 0ms !important;
+          }
+          .dedup__copy,
+          .dedup__edit-pulse,
+          .dedup__hub-edit-pulse {
+            display: none;
+          }
+        }
+
+        @media (max-width: 540px) {
+          .dedup__stage { max-width: 340px; }
+          .dedup__label-site--full { display: none; }
+          .dedup__label-site--short { display: inline; }
+          .dedup__label-kind { font-size: 0.625rem; gap: 0.25rem; }
+          .dedup__label-glyph { font-size: 0.875rem; }
+          .dedup__label-site { font-size: 0.625rem; }
+          .dedup__label-filename { font-size: 0.5625rem; max-width: 11ch; }
+          .dedup__hub-label-kind { font-size: 0.6875rem; }
+          .dedup__hub-label-site { font-size: 0.625rem; }
+          .dedup__hub-label { margin-top: 1.85rem; }
+          .dedup__description { font-size: 0.875rem; }
+        }
+      </style></figure><!--astro:end--></astro-island>
+<p>That question has a tool-shaped hole behind it. After a tenant migration consolidates hubs and shuffles libraries, the same PDF tends to multiply: somebody saved a copy into a personal site for safekeeping, the procurement team grabbed it for a vendor packet, an intranet page embeds it from a third location. Most of those copies are stale. Knowing <em>which</em> are stale, against <em>which</em> canonical version, is the part that’s hard.</p>
+<p>I built a duplicate-detection scanner as a sibling to my <a href="/posts/tenant-link-inventory/">link-inventory tool</a>. Same plumbing: a tenant-wide Azure Function walking every site collection in scope. Different question.</p>
+<a class="repo-link" href="https://github.com/charlievogt/spo-link-inventory" target="_blank" rel="noopener noreferrer" aria-label="Open charlievogt/spo-link-inventory on GitHub"> <svg class="repo-link__icon" viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true"> <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path> </svg> <div class="repo-link__body"> <div class="repo-link__name"> <span class="repo-link__owner">charlievogt</span> <span class="repo-link__sep">/</span> <strong class="repo-link__repo">spo-link-inventory</strong>  </div>   </div> <span class="repo-link__arrow" aria-hidden="true">↗</span> </a> 
+<h2 id="hash-everything-group-by-hash"><a href="#hash-everything-group-by-hash" class="heading-link">Hash everything, group by hash</a><a href="#hash-everything-group-by-hash" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>The first pass is the obvious one. Every document in the tenant gets hashed. Group by hash, surface anything that appears in more than one place. The output is a flat report: “this hash exists in 4 locations, here they are.”</p>
+<p>That report is useful. It is not, by itself, the most useful report.</p>
+<h2 id="the-interesting-case-is-the-stale-copy"><a href="#the-interesting-case-is-the-stale-copy" class="heading-link">The interesting case is the stale copy</a><a href="#the-interesting-case-is-the-stale-copy" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>“Stale copy” means: an older version of file A is byte-identical to the current content of file B. A is the authoritative, recently-edited copy. B is the snapshot somebody saved into a different library three years ago and forgot about. Their current bytes are different (A has been edited since), so a flat current-bytes hash comparison misses them entirely.</p>
+<p>The way to find them is to walk version history. Hash every prior version of every file. Then, for each current file, look for matches against the historical hashes of files elsewhere in the tenant. When file B’s current content matches what file A looked like three years ago, B is a stale snapshot of A.</p>
+<p>The output reads like this:</p>
+<blockquote>
+<p><strong>Marketing/policies/vendor-conduct.pdf</strong> was last edited 2 months ago.
+<strong>PersonalSites/[user]/Documents/vendor-conduct.pdf</strong> is byte-identical to what Marketing had 4 years ago. The personal-site copy is stale.</p>
+</blockquote>
+<p>Content owners can act on that. “Delete your copy and link to ours” is an easy ask when the report shows their copy is four years out of date. “Compare these two and reconcile” is a much harder ask when all you have is “here are six PDFs with the same name.”</p>
+<p>That stale-copy report turned out to be the most useful single duplicate-detection feature for site owners. Most of what people call “duplicates” are not exact-current-byte matches. They are old branches of a document that diverged from the canonical copy and are now slightly stale. Surfacing those is what gets pages cleaned up.</p>
+<h2 id="office-docs-needed-a-different-hash-function"><a href="#office-docs-needed-a-different-hash-function" class="heading-link">Office docs needed a different hash function</a><a href="#office-docs-needed-a-different-hash-function" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>PDFs round-trip cleanly through SharePoint upload. The bytes you put in are the bytes you get back, and identical files produce identical hashes whether they were uploaded last week or four years ago.</p>
+<p>Office documents do not. Upload the same <code>.docx</code> to two libraries with different column schemas and SharePoint rewrites parts of the OPC zip on each upload to keep library column values in sync with the file’s properties, a behavior usually referred to as property promotion. The rewritten parts include enough metadata for the resulting full-bytes SHA-256 to differ between copies, even when no user-visible content has changed.</p>
+<p>The empirical version: I uploaded a 1579-byte <code>.docx</code> fixture to two demo libraries on a test tenant. SharePoint accepted both copies and grew them to 8161 bytes each (around 6.5 KB of metadata added per upload), with different bytes per library. Their full-bytes SHA-256 digests disagreed.</p>
+<aside class="callout callout--unsourced" role="note"> <div class="callout__head"> <span class="callout__icon" aria-hidden="true">?</span> <span class="callout__title">Unsourced</span> </div> <div class="callout__body"> <p>I have not found a current Microsoft Learn article that documents the exact rewrite mechanism for SharePoint Online. The older <a href="https://learn.microsoft.com/sharepoint/dev/schema/field-element-field">Field element</a> reference describes the underlying property-promotion concept but does not enumerate which OPC parts SharePoint Online actually touches. The four part-families I observed being rewritten (<code>docProps/</code>, <code>customXml/</code>, <code>[Content_Types].xml</code>, <code>_rels/.rels</code>) are an empirical list, not a documented one.</p> </div> </aside> 
+<p>The fix is a content-aware hash. For OOXML files (<code>.docx</code>, <code>.xlsx</code>, <code>.pptx</code>), open the OPC zip, drop the four rewritten part-families, then SHA-256 each remaining part with its name as a salt and combine. PDFs continue to use full-bytes SHA-256 because they have no equivalent rewrite problem. The hash index keys by <code>(algo, hash)</code> so the two modes never collide and existing PDF entries stay grouped while OOXML entries migrate as files get rescanned.</p>
+<p>After the change, the same fixture uploaded to two libraries produces matching content-aware hashes. The full-bytes SHA-256 still disagrees (<code>d0007c01…</code> vs <code>b2936fcd…</code>), but the OOXML content-aware hash is identical (<code>ba3e3e83…</code> on both sides) and the exact-duplicate report groups the pair.</p>
+<h2 id="renames-and-edits-and-forks-from-a-common-ancestor"><a href="#renames-and-edits-and-forks-from-a-common-ancestor" class="heading-link">Renames-and-edits, and forks from a common ancestor</a><a href="#renames-and-edits-and-forks-from-a-common-ancestor" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Exact and stale cover identical-bytes cases. Two cases they don’t cover:</p>
+<ol>
+<li>
+<p>The “FinalReallyFinal” rename chain. A document gets edited, polished, renamed, edited again. Every version drifts a few words from the previous one. None of them hash identically. The exact-duplicate report misses every link in the chain.</p>
+</li>
+<li>
+<p>The diverged-fork case. The same source document was uploaded to two libraries, then both teams edited their copy independently. Neither current matches the other; neither current matches the other’s history (that would be the stale case). But somewhere back in version history they share a common ancestor, and “are these two documents the same thing now?” is exactly the question the content owner needs answered.</p>
+</li>
+</ol>
+<p>Both cases need a fingerprint that survives small content changes. The hash index now stores two extra values per file (and per historical version): a SHA-256 of the document’s normalized visible text, and a 64-bit <a href="https://en.wikipedia.org/wiki/SimHash">SimHash</a> over 3-shingled word tokens.</p>
+<p>For the rename chain, the <strong>Near-duplicate</strong> query is pairwise SimHash with a Hamming-distance threshold of 3. When two documents have visible text that’s similar enough, their SimHashes are within a few bits of each other regardless of formatting changes, reviewer comments, or the property-bag rewrites SharePoint did along the way. Distance 0 means identical text. The report sorts pairs closest-first.</p>
+<p><img src="/blog/dedup-near-duplicate-tab.png" alt="Near-duplicate tab on the live web part: scenarioE-original-v2.docx in /sites/demo-hr/Documents and scenarioE-polished.docx in /sites/demo-finance/Documents, Hamming distance 0 / 64"/></p>
+<p>For the divergence case, the <strong>Diverged</strong> query builds an inverted index: text-content hash from any historical version, mapped to the files that produced it. Any text-hash bucket with two or more contributing files is a candidate. The query then drops pairs that are already exact matches (currents agree, Exact tab) or asymmetric (one current matches the other’s history, Stale tab), leaving the symmetric “we both came from the same place and have both moved on” case.</p>
+<p><img src="/blog/dedup-diverged-tab.png" alt="Diverged tab on the live web part: scenarioF.docx exists in /sites/demo-hr/Documents and /sites/demo-marketing/Documents, both forked from a 2026-04-29 ancestor and edited away independently"/></p>
+<p>The Diverged join is on text-hash, not content-hash, deliberately. Two SharePoint uploads of the same source can pick up different <code>[trash]/*</code> parts that the OOXML content-aware hash doesn’t fully cancel out. The text-content hash is robust to those differences. So is it robust to the bytes that SimHash would care about, which makes it the right key for finding shared origins.</p>
+<aside class="callout callout--note" role="note"> <div class="callout__head"> <span class="callout__icon" aria-hidden="true">i</span> <span class="callout__title">Note</span> </div> <div class="callout__body"> <p>SimHash thresholds in the literature (<a href="https://research.google/pubs/detecting-near-duplicates-for-web-crawling/">Manku et al. 2007</a>) are tuned for long documents. On the very short test fixtures I generated (≈50-word bodies), even a single-word edit produced a Hamming distance of 6 over 64 bits, well over the default threshold of 3. The threshold is a constant in the codebase rather than a config knob today; for tenants with a lot of short documents, it likely wants to be higher. Worth measuring on real data before settling on a default.</p> </div> </aside> 
+<h2 id="what-the-report-actually-looks-like"><a href="#what-the-report-actually-looks-like" class="heading-link">What the report actually looks like</a><a href="#what-the-report-actually-looks-like" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Same Azure Storage account as the link inventory. Same SPFx web part. The duplicate-detection view has five result tabs, each answering a different “are these the same document?” question:</p>
+<ul>
+<li><strong>Exact</strong>: current-bytes hash groups. Identical content right now.</li>
+<li><strong>Stale</strong>: version-history match. One file’s current is what another file’s previous version was.</li>
+<li><strong>Diverged</strong>: common ancestor, both edited away. Currents differ, neither is in the other’s history, but their histories overlap in the text-hash sense.</li>
+<li><strong>Near-duplicate</strong>: SimHash within threshold. Same words, possibly some polish edits.</li>
+<li><strong>Same-name</strong>: filename collisions across libraries, useful for triage when the hashes don’t group anything but the names look suspicious.</li>
+</ul>
+<p>Each row links straight to the underlying file. Pair rows pair both files with whatever metadata the tab needs: last-modified dates and the divergence date for Stale, the Hamming distance for Near-duplicate, the shared-ancestor timestamp for Diverged.</p>
+<p>Site owners get scoped to their own sites. Tenant admins see everything. The web part exists for the same reason the <a href="/posts/tenant-link-inventory/">link-inventory web part</a> does: PowerShell does not handle five thousand site collections gracefully, and the people who actually care about tenant content sprawl are not going to run PowerShell anyway.</p>
+<h2 id="the-other-half-of-the-answer"><a href="#the-other-half-of-the-answer" class="heading-link">The other half of the answer</a><a href="#the-other-half-of-the-answer" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>What the dupe scanner gives you is a list. What it does <em>not</em> give you is judgment about which copy should win. That call is governance, not tooling, and the right person to make it is the content owner who’s been staring at six versions of the same vendor policy PDF for three years wondering which one to trust.</p>
+<p>The tool answers a smaller question: “given that you’re going to make that call, here is what’s actually in your tenant.” Most cleanup work bottlenecks on getting the inventory right. Five distinct ways to find “is this the same document?” turns “we have duplicates somewhere” into “delete these specific 47 files.”</p>  </div> <nav aria-label="Post navigation" class="mt-20 grid gap-3 border-t border-border/70 pt-10 sm:grid-cols-2"><a href="/posts/tenant-link-inventory" class="card group flex flex-col gap-1.5 p-5 sm:col-start-1"><span class="meta-sm flex items-center gap-1.5 text-fg-muted transition-colors group-hover:text-accent"><span aria-hidden="true">←</span><span>Older</span></span><span class="font-medium text-fg transition-colors group-hover:text-accent">Every link in your SharePoint tenant, sharing wrappers and all</span></a><span class="hidden sm:block"></span></nav> <section data-pagefind-ignore="all" class="mt-20 border-t border-border/70 pt-10"> <h2 class="meta-sm mb-4 text-fg-muted">Comments &amp; reactions</h2> <div class="giscus-mount"></div> </section> <script>(function(){const mapping = "pathname";
+
+  // --- Giscus bootstrap ---------------------------------------------------
+  // Mounts the Giscus client script into .giscus-mount with the current
+  // site theme baked in (prevents flash-of-wrong-theme).
+
+  function giscusTheme() {
+    return document.documentElement.getAttribute('data-theme') === 'dark'
+      ? 'noborder_dark'
+      : 'noborder_light';
+  }
+
+  function mountGiscus() {
+    const mount = document.querySelector('.giscus-mount');
+    if (!mount) return;
+    // Already mounted? (e.g., after Astro view-transition swap)
+    if (mount.querySelector('iframe.giscus-frame, script[src*="giscus"]'))
+      return;
+
+    const s = document.createElement('script');
+    s.src = 'https://giscus.app/client.js';
+    s.dataset.repo = 'charlievogt/charlie.tools';
+    s.dataset.repoId = 'R_kgDOSKys8g';
+    s.dataset.category = 'Comments';
+    s.dataset.categoryId = 'DIC_kwDOSKys8s4C7kX3';
+    s.dataset.mapping = mapping;
+    s.dataset.strict = '0';
+    s.dataset.reactionsEnabled = '1';
+    s.dataset.emitMetadata = '0';
+    s.dataset.inputPosition = 'bottom';
+    s.dataset.theme = giscusTheme();
+    s.dataset.lang = 'en';
+    s.dataset.loading = 'lazy';
+    s.crossOrigin = 'anonymous';
+    s.async = true;
+    mount.appendChild(s);
+  }
+
+  // --- Theme sync ---------------------------------------------------------
+  function pushThemeToGiscus() {
+    const iframe = document.querySelector('iframe.giscus-frame');
+    if (!iframe || !iframe.contentWindow) return;
+    iframe.contentWindow.postMessage(
+      { giscus: { setConfig: { theme: giscusTheme() } } },
+      'https://giscus.app',
+    );
+  }
+
+  // Only bind the observer once per page session.
+  if (!window.__giscusThemeBound) {
+    window.__giscusThemeBound = true;
+    new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        if (m.attributeName === 'data-theme') {
+          pushThemeToGiscus();
+        }
+      }
+    }).observe(document.documentElement, { attributes: true });
+  }
+
+  // Mount now + on every view-transition navigation.
+  mountGiscus();
+  document.addEventListener('astro:page-load', mountGiscus);
+})();</script> </article>  </main> <footer data-pagefind-ignore="all" class="relative mt-32 border-t border-border/70"> <div class="mx-auto flex w-full max-w-content flex-col items-start justify-between gap-6 px-screen-px py-10 sm:flex-row sm:items-center"> <div class="flex items-baseline gap-3"> <span class="group text-sm inline-flex items-baseline font-semibold leading-none" style="letter-spacing: -0.025em;"> <span class="text-fg transition-colors group-hover:text-accent">charlie</span><span class="inline-block text-accent transition-transform duration-300 group-hover:-translate-y-[1px]" style="font-size: 1.15em; line-height: 1; margin: 0 0.01em;" aria-hidden="true">.</span><span class="text-fg transition-colors group-hover:text-accent">tools</span> </span> <span class="meta-sm">&copy; 2026</span> </div> <nav aria-label="Secondary"> <ul class="flex items-center gap-5"> <li> <a href="/rss.xml" class="meta transition-colors hover:text-fg">
+RSS
+</a> </li> <li> <a href="/sitemap-index.xml" class="meta transition-colors hover:text-fg">
+Sitemap
+</a> </li> <li> <a href="https://github.com/charlievogt" rel="noopener" class="meta transition-colors hover:text-fg">
+GitHub
+</a> </li> </ul> </nav> </div> </footer> <script>
+      // Heading-link / heading-anchor click handling.
+      //
+      // - Intercepts both the wrapping title link AND the # icon so we
+      //   can use history.replaceState() instead of letting the browser's
+      //   default navigation push a history entry for every section.
+      //   Result: back button returns to the page the visitor came from,
+      //   not to the previous anchor on the same page.
+      //
+      // - preventDefault here does NOT affect right-click / tap-and-hold
+      //   context menus, so the browser's native "Copy Link" menu for
+      //   the title link still works.
+      //
+      // - When the user clicks the # icon specifically, also copy the
+      //   fully-resolved URL to clipboard and flash the copied state.
+      (function () {
+        if (window.__headingLinkBound) return;
+        window.__headingLinkBound = true;
+
+        document.addEventListener('click', function (e) {
+          // Let modifier-clicks behave normally (open in new tab, etc.)
+          if (
+            e.defaultPrevented ||
+            e.button !== 0 ||
+            e.metaKey ||
+            e.ctrlKey ||
+            e.shiftKey ||
+            e.altKey
+          )
+            return;
+
+          var t = e.target;
+          if (!(t instanceof Element)) return;
+          var link = t.closest('a.heading-link, a.heading-anchor');
+          if (!link) return;
+
+          var href = link.getAttribute('href');
+          if (!href || href.charAt(0) !== '#') return;
+
+          var id = decodeURIComponent(href.slice(1));
+          var target = document.getElementById(id);
+          if (!target) return;
+
+          // Block default nav so it doesn't push a history entry
+          e.preventDefault();
+
+          // Replace the current URL so the section is shareable, but
+          // never push — anchor hopping shouldn't clutter history.
+          try {
+            history.replaceState(null, '', href);
+          } catch (_) {}
+
+          // Smooth scroll to the heading (respecting reduced motion)
+          var reduce =
+            window.matchMedia &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          target.scrollIntoView({
+            behavior: reduce ? 'auto' : 'smooth',
+            block: 'start',
+          });
+
+          // If the # icon was the thing clicked, copy + flash
+          if (link.classList.contains('heading-anchor')) {
+            var url = new URL(href, window.location.href).href;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(url).catch(function () {});
+            }
+            link.setAttribute('data-copied', 'true');
+            window.setTimeout(function () {
+              link.removeAttribute('data-copied');
+            }, 1400);
+          }
+        });
+      })();
+
+      // Smooth-scroll to the anchor when a URL with a hash is loaded.
+      // Browsers normally jump instantly on initial navigation; this
+      // intercepts, resets to the top, and then animates to the target.
+      // Respects prefers-reduced-motion.
+      (function () {
+        function smoothScrollToHash() {
+          var hash = window.location.hash;
+          if (!hash || hash.length < 2) return;
+          if (
+            window.matchMedia &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          )
+            return;
+          var id;
+          try {
+            id = decodeURIComponent(hash.slice(1));
+          } catch (_) {
+            id = hash.slice(1);
+          }
+          var target = document.getElementById(id);
+          if (!target) return;
+          // Instant reset to counteract the browser's auto-jump
+          window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+          // Smooth scroll after two frames so layout has stabilized
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+          });
+        }
+        if (!window.__hashSmoothScroll) {
+          window.__hashSmoothScroll = true;
+          if (document.readyState === 'complete') {
+            smoothScrollToHash();
+          } else {
+            window.addEventListener('load', smoothScrollToHash);
+          }
+          // Handle view-transition navigations too
+          document.addEventListener('astro:page-load', smoothScrollToHash);
+        }
+      })();
+
+      // Heading-anchor enhancement for non-MDX pages (.astro files like
+      // About). Mirrors what the rehype plugin does for markdown posts:
+      // wrap text in <a.heading-link>, append <a.heading-anchor> with
+      // the same SVG icon. Idempotent — skips headings that already
+      // have the markup.
+      (function () {
+        if (window.__headingEnhanceBound) return;
+        window.__headingEnhanceBound = true;
+
+        var ICON_SVG =
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+          '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>' +
+          '<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>' +
+          '</svg>';
+
+        function slugify(s) {
+          return (s || '')
+            .toLowerCase()
+            .trim()
+            .replace(/['’`"]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        }
+
+        function enhance(h) {
+          // Already wrapped (rehype handled it on a markdown page)?
+          if (h.querySelector(':scope > a.heading-link')) return;
+
+          if (!h.id) {
+            var slug = slugify(h.textContent);
+            if (!slug) return;
+            // Avoid id collision
+            var base = slug;
+            var n = 2;
+            while (
+              document.getElementById(slug) &&
+              document.getElementById(slug) !== h
+            ) {
+              slug = base + '-' + n++;
+            }
+            h.id = slug;
+          }
+
+          var hash = '#' + h.id;
+          var link = document.createElement('a');
+          link.href = hash;
+          link.className = 'heading-link';
+          while (h.firstChild) link.appendChild(h.firstChild);
+          h.appendChild(link);
+
+          var anchor = document.createElement('a');
+          anchor.href = hash;
+          anchor.className = 'heading-anchor';
+          anchor.setAttribute('aria-label', 'Copy link to this section');
+          anchor.tabIndex = -1;
+          anchor.innerHTML = ICON_SVG;
+          h.appendChild(anchor);
+        }
+
+        function enhanceAll() {
+          var headings = document.querySelectorAll(
+            '.prose h2, .prose h3, .prose h4, .prose h5, .prose h6',
+          );
+          for (var i = 0; i < headings.length; i++) enhance(headings[i]);
+        }
+
+        enhanceAll();
+        document.addEventListener('astro:page-load', enhanceAll);
+      })();
+    </script> </body> </html>
