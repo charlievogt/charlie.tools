@@ -1,0 +1,440 @@
+<!DOCTYPE html><html lang="en"> <head><!-- Charset, viewport, theme --><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="Astro v5.18.1"><meta name="color-scheme" content="light dark"><!-- Run before first paint to avoid flash of wrong theme. Re-runs on
+     every Astro view-transition navigation so the theme attribute is
+     reasserted onto the live document. --><script data-astro-rerun>
+  (function () {
+    try {
+      var stored = localStorage.getItem('theme');
+      var prefersDark = window.matchMedia(
+        '(prefers-color-scheme: dark)',
+      ).matches;
+      var theme =
+        stored === 'dark' || stored === 'light'
+          ? stored
+          : prefersDark
+            ? 'dark'
+            : 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    } catch (e) {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  })();
+</script><!-- Carry the current theme onto the incoming document before Astro's
+     ClientRouter swaps it in, so view-transition navigation can't show
+     a flash of the wrong theme between pages. --><script>
+  (function () {
+    if (window.__charlieThemePersistBound) return;
+    window.__charlieThemePersistBound = true;
+    document.addEventListener('astro:before-swap', function (e) {
+      var current = document.documentElement.getAttribute('data-theme');
+      if (current && e && e.newDocument) {
+        e.newDocument.documentElement.setAttribute('data-theme', current);
+      }
+    });
+  })();
+</script><!-- Canonical & favicons --><link rel="canonical" href="https://charlie.tools/share/private-preview-part-1/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="sitemap" href="/sitemap-index.xml"><link rel="alternate" type="application/rss+xml" title="charlie.tools" href="https://charlie.tools/rss.xml"><!-- Primary meta --><title>Part 1: Closer than you think — charlie.tools</title><meta name="title" content="Part 1: Closer than you think — charlie.tools"><meta name="description" content="The mental shift that turns SharePoint admins into SPFx builders."><meta name="author" content="Charlie Vogt"><meta name="keywords" content="SPFx, Microsoft365"><!-- Open Graph --><meta property="og:type" content="article"><meta property="og:url" content="https://charlie.tools/share/private-preview-part-1/"><meta property="og:title" content="Part 1: Closer than you think — charlie.tools"><meta property="og:description" content="The mental shift that turns SharePoint admins into SPFx builders."><meta property="og:image" content="https://charlie.tools/og-default.png"><meta property="og:site_name" content="charlie.tools"><meta property="article:published_time" content="2026-05-03T00:00:00.000Z"><meta property="article:tag" content="SPFx"><meta property="article:tag" content="Microsoft365"><!-- Twitter --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:url" content="https://charlie.tools/share/private-preview-part-1/"><meta name="twitter:title" content="Part 1: Closer than you think — charlie.tools"><meta name="twitter:description" content="The mental shift that turns SharePoint admins into SPFx builders."><meta name="twitter:image" content="https://charlie.tools/og-default.png"><!-- Cloudflare Web Analytics — production builds only. The preview server
+     runs `astro dev` so import.meta.env.PROD is false there and the beacon
+     is omitted, keeping preview traffic out of the dashboard. --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;b0656b73b611467e98011b1577c1c873&quot;}"></script><!-- Umami self-hosted analytics — production only, same reason. Runs on a
+     first-party subdomain so default ad blockers don't drop it the way they
+     drop cloudflareinsights.com. --><script defer src="https://a.charlie.tools/u" data-website-id="479b3fda-d983-49ba-b889-3e2cfaaa4879"></script><!-- Umami session recorder — 100% sample for now while traffic is low,
+     moderate masking, 5min cap. Dial sample-rate down once volume grows.
+     PROD only so preview traffic isn't recorded. --><script defer src="https://a.charlie.tools/recorder.js" data-website-id="479b3fda-d983-49ba-b889-3e2cfaaa4879" data-sample-rate="1" data-mask-level="moderate" data-max-duration="300000"></script><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.BFfqj1ee.js"></script><link rel="stylesheet" href="/_astro/_slug_.CQnHOXT-.css">
+<style>.repo-badge[data-astro-cid-4y6e65ve]{display:inline-flex;align-items:center;gap:.4rem;padding:.25rem .6rem;border:1px solid rgb(var(--border));background:rgb(var(--bg-raised));border-radius:9999px;font-family:Geist Mono Variable,Geist Mono,ui-monospace,monospace;font-size:.6875rem;line-height:1;letter-spacing:.02em;color:rgb(var(--fg-muted));text-decoration:none;transition:border-color .16s ease,color .16s ease,background-color .16s ease,transform .16s ease}.repo-badge[data-astro-cid-4y6e65ve]:hover,.repo-badge[data-astro-cid-4y6e65ve]:focus-visible{border-color:rgb(var(--accent) / .55);color:rgb(var(--accent));background:rgb(var(--accent) / .06);outline:none;transform:translateY(-1px)}.repo-badge__icon[data-astro-cid-4y6e65ve]{color:currentColor;flex-shrink:0}.repo-badge__text[data-astro-cid-4y6e65ve]{color:inherit}.repo-badge--sm[data-astro-cid-4y6e65ve]{padding:.15rem .5rem;font-size:.625rem;gap:.3rem}.repo-badge--sm[data-astro-cid-4y6e65ve] .repo-badge__icon[data-astro-cid-4y6e65ve]{width:11px;height:11px}
+</style><script type="module" src="/_astro/page.IvKoM_B8.js"></script><style>.callout{margin:2rem 0;padding:1rem 1.25rem 1.1rem;border:1px solid rgb(var(--border));border-left-width:3px;border-radius:.625rem;background:rgb(var(--bg-raised));font-size:.95em}.callout__head{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;font-family:Geist Mono Variable,Geist Mono,ui-monospace,monospace;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase}.callout__icon{display:inline-flex;width:1.15rem;height:1.15rem;align-items:center;justify-content:center;border-radius:9999px;font-size:.75rem;font-weight:700;line-height:1}.callout__body{color:rgb(var(--fg) / .9);line-height:1.6}.callout__body>:first-child{margin-top:0}.callout__body>:last-child{margin-bottom:0}.callout--note{border-left-color:rgb(var(--accent))}.callout--note .callout__title{color:rgb(var(--accent))}.callout--note .callout__icon{background:rgb(var(--accent) / .15);color:rgb(var(--accent))}.callout--tip{border-left-color:#10b981}.callout--tip .callout__title{color:#059669}.callout--tip .callout__icon{background:#10b9812e;color:#059669}html[data-theme=dark] .callout--tip .callout__title,html[data-theme=dark] .callout--tip .callout__icon{color:#34d399}.callout--warning{border-left-color:#f59e0b}.callout--warning .callout__title{color:#b45309}.callout--warning .callout__icon{background:#f59e0b2e;color:#b45309}html[data-theme=dark] .callout--warning .callout__title,html[data-theme=dark] .callout--warning .callout__icon{color:#fbbf24}.callout--unsourced{border-left-color:rgb(var(--fg-subtle));background:rgb(var(--bg))}.callout--unsourced .callout__title{color:rgb(var(--fg-muted))}.callout--unsourced .callout__icon{background:rgb(var(--fg-subtle) / .2);color:rgb(var(--fg-muted));font-family:Geist Mono Variable,Geist Mono,ui-monospace,monospace}
+</style></head> <body class="flex min-h-svh flex-col"> <header data-pagefind-ignore="all" class="fixed inset-x-0 top-0 z-40 border-b border-border/70 bg-bg/75 backdrop-blur-xl supports-[backdrop-filter]:bg-bg/60"> <div class="mx-auto flex h-14 w-full max-w-content items-center justify-between gap-4 px-screen-px"> <!-- Brand --> <a href="/" class="inline-flex items-center" aria-label="charlie.tools — home"> <span class="group text-lg inline-flex items-baseline font-semibold leading-none" style="letter-spacing: -0.025em;"> <span class="text-fg transition-colors group-hover:text-accent">charlie</span><span class="inline-block text-accent transition-transform duration-300 group-hover:-translate-y-[1px]" style="font-size: 1.15em; line-height: 1; margin: 0 0.01em;" aria-hidden="true">.</span><span class="text-fg transition-colors group-hover:text-accent">tools</span> </span> </a> <!-- Nav + toggle --> <div class="flex items-center gap-1"> <nav aria-label="Primary" class="hidden items-center sm:flex"> <ul class="flex items-center"> <li> <a href="/posts" class="relative inline-flex items-center rounded-md px-3 py-1.5 text-sm transition-colors text-fg-muted hover:text-fg"> Posts  </a> </li><li> <a href="/tags" class="relative inline-flex items-center rounded-md px-3 py-1.5 text-sm transition-colors text-fg-muted hover:text-fg"> Tags  </a> </li><li> <a href="/about" class="relative inline-flex items-center rounded-md px-3 py-1.5 text-sm transition-colors text-fg-muted hover:text-fg"> About  </a> </li> </ul> </nav> <div class="contents sm:hidden" data-astro-cid-6aabv5oc> <button type="button" id="mobile-menu-trigger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu-panel" class="group inline-flex h-8 w-8 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-bg-raised hover:text-fg" data-astro-cid-6aabv5oc> <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" class="mobile-menu-icon" data-astro-cid-6aabv5oc> <line class="mobile-menu-icon__line mobile-menu-icon__line--top" x1="2" y1="5" x2="14" y2="5" data-astro-cid-6aabv5oc></line> <line class="mobile-menu-icon__line mobile-menu-icon__line--mid" x1="2" y1="8" x2="14" y2="8" data-astro-cid-6aabv5oc></line> <line class="mobile-menu-icon__line mobile-menu-icon__line--bot" x1="2" y1="11" x2="14" y2="11" data-astro-cid-6aabv5oc></line> </svg> </button> <div id="mobile-menu-panel" role="dialog" aria-modal="true" aria-label="Site navigation" class="mobile-menu-panel" hidden data-astro-cid-6aabv5oc> <nav aria-label="Mobile navigation" data-astro-cid-6aabv5oc> <ol class="mobile-menu-list" data-astro-cid-6aabv5oc> <li class="mobile-menu-item" style="--i: 0" data-astro-cid-6aabv5oc> <a href="/posts" class="mobile-menu-link" data-astro-cid-6aabv5oc> <span class="mobile-menu-num" data-astro-cid-6aabv5oc> 01 </span> <span class="mobile-menu-label" data-astro-cid-6aabv5oc>Posts</span> <span class="mobile-menu-arrow" aria-hidden="true" data-astro-cid-6aabv5oc>
+→
+</span> </a> </li><li class="mobile-menu-item" style="--i: 1" data-astro-cid-6aabv5oc> <a href="/tags" class="mobile-menu-link" data-astro-cid-6aabv5oc> <span class="mobile-menu-num" data-astro-cid-6aabv5oc> 02 </span> <span class="mobile-menu-label" data-astro-cid-6aabv5oc>Tags</span> <span class="mobile-menu-arrow" aria-hidden="true" data-astro-cid-6aabv5oc>
+→
+</span> </a> </li><li class="mobile-menu-item" style="--i: 2" data-astro-cid-6aabv5oc> <a href="/about" class="mobile-menu-link" data-astro-cid-6aabv5oc> <span class="mobile-menu-num" data-astro-cid-6aabv5oc> 03 </span> <span class="mobile-menu-label" data-astro-cid-6aabv5oc>About</span> <span class="mobile-menu-arrow" aria-hidden="true" data-astro-cid-6aabv5oc>
+→
+</span> </a> </li> </ol> </nav> </div> </div>  <script>
+  (function () {
+    if (window.__mobileMenuBound) return;
+    window.__mobileMenuBound = true;
+
+    function getEls() {
+      return {
+        trigger: document.getElementById('mobile-menu-trigger'),
+        panel: document.getElementById('mobile-menu-panel'),
+      };
+    }
+
+    function open() {
+      var els = getEls();
+      if (!els.trigger || !els.panel) return;
+      els.panel.removeAttribute('hidden');
+      // Two RAFs so the browser commits the unhidden state before
+      // applying the data-open transition. Single RAF flickers in Safari.
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          els.panel.setAttribute('data-open', '');
+        });
+      });
+      els.trigger.setAttribute('aria-expanded', 'true');
+      els.trigger.setAttribute('aria-label', 'Close menu');
+    }
+
+    function close() {
+      var els = getEls();
+      if (!els.trigger || !els.panel) return;
+      els.panel.removeAttribute('data-open');
+      els.trigger.setAttribute('aria-expanded', 'false');
+      els.trigger.setAttribute('aria-label', 'Open menu');
+      // Wait for the panel transition (220ms) before [hidden] so the
+      // outgoing animation actually plays.
+      window.setTimeout(function () {
+        if (els.panel.getAttribute('aria-expanded') !== 'true') {
+          els.panel.setAttribute('hidden', '');
+        }
+      }, 240);
+    }
+
+    function isOpen() {
+      var t = document.getElementById('mobile-menu-trigger');
+      return !!(t && t.getAttribute('aria-expanded') === 'true');
+    }
+
+    document.addEventListener('click', function (e) {
+      var t = e.target;
+      if (!(t instanceof Element)) return;
+
+      // Trigger toggles the panel.
+      if (t.closest('#mobile-menu-trigger')) {
+        if (isOpen()) close();
+        else open();
+        return;
+      }
+
+      // A link inside the panel: let the navigation happen, then close.
+      // (View transitions will continue to render the panel briefly,
+      //  but `astro:before-swap` below handles the cross-page case.)
+      if (t.closest('#mobile-menu-panel a')) {
+        close();
+        return;
+      }
+
+      // Click anywhere outside the panel while it's open: close.
+      if (isOpen() && !t.closest('#mobile-menu-panel')) {
+        close();
+      }
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && isOpen()) close();
+    });
+
+    // Close on view-transition navigation so the next page renders clean.
+    document.addEventListener('astro:before-swap', function () {
+      if (isOpen()) close();
+    });
+
+    // Close if the viewport grows past `sm` while the panel is open.
+    var mq = window.matchMedia('(min-width: 640px)');
+    var handleMq = function (e) {
+      if (e.matches && isOpen()) close();
+    };
+    if (mq.addEventListener) mq.addEventListener('change', handleMq);
+    else if (mq.addListener) mq.addListener(handleMq);
+  })();
+</script> <div class="hidden mx-1.5 h-4 w-px bg-border-strong/70 sm:block" aria-hidden="true"></div> <button type="button" id="search-trigger" aria-label="Open search" class="group inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-bg-raised text-fg-muted transition-colors hover:border-accent/50 hover:bg-bg hover:text-fg sm:h-9 sm:w-auto sm:gap-2.5 sm:justify-start sm:rounded-lg sm:pl-3 sm:pr-3.5 sm:text-[0.875rem]"> <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <circle cx="11" cy="11" r="7"></circle> <path d="m20 20-3.5-3.5"></path> </svg> <span class="hidden sm:inline">Search</span> </button> <dialog id="search-dialog" aria-label="Search posts" class="search-dialog"> <div class="search-header"> <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="search-header__icon"> <circle cx="11" cy="11" r="7"></circle> <path d="m20 20-3.5-3.5"></path> </svg> <input id="search-input" type="text" placeholder="Search…" autocomplete="off" spellcheck="false" aria-label="Search query" class="search-header__input"> </div> <div id="search-results" class="search-results" aria-live="polite"></div> </dialog>  <script type="module">let n=null,d=!1;async function g(){if(!(n||d)){d=!0;try{n=await new Function("url","return import(/* @vite-ignore */ url)")("/pagefind/pagefind.js"),n&&typeof n.init=="function"&&await n.init()}catch(e){console.warn("[search] pagefind index unavailable",e);const t=document.getElementById("search-results");t&&(t.innerHTML=`<div class="search-empty">Search isn't loaded right now. Browse the <a href="/posts">all posts</a> page instead.</div>`)}finally{d=!1}}}function u(e){return(e||"").replace(/[&<>"']/g,t=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[t])}function p(){const e=document.getElementById("search-dialog"),t=document.getElementById("search-trigger"),o=document.getElementById("search-input"),s=document.getElementById("search-results");if(!e||!t||!o||!s||t.__bound)return;t.__bound=!0;const c='<div class="search-empty">Type to search posts.</div>';s.innerHTML=c;const h=()=>{e.open||(e.showModal(),o.value="",s.innerHTML=c,o.focus(),g())},m=()=>{e.open&&e.close()};t.addEventListener("click",h),e.addEventListener("click",r=>{if(!e.open)return;const a=e.getBoundingClientRect();(r.clientY<a.top||r.clientY>a.bottom||r.clientX<a.left||r.clientX>a.right)&&m()});let f;o.addEventListener("input",()=>{clearTimeout(f);const r=o.value.trim();if(!r){s.innerHTML=c;return}f=window.setTimeout(async()=>{if(n||await g(),!n||typeof n.search!="function")return;const a=await n.search(r),l=await Promise.all(a.results.slice(0,8).map(i=>i.data()));if(l.length===0){s.innerHTML='<div class="search-empty">No matches for <strong style="color: rgb(var(--fg)); font-weight: 500">'+u(r)+"</strong>.</div>";return}s.innerHTML=l.map(i=>`
+            <a href="${u(i.url)}">
+              <div class="search-results__title">${u(i.meta?.title||i.url)}</div>
+              ${i.excerpt?`<div class="search-results__excerpt">${i.excerpt}</div>`:""}
+            </a>`).join("")},120)})}function y(){window.__searchShortcut||(window.__searchShortcut=!0,document.addEventListener("keydown",e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();const t=document.getElementById("search-dialog");if(!t)return;t.open?t.close():document.getElementById("search-trigger")?.click()}}))}p();y();document.addEventListener("astro:page-load",p);</script> <div class="hidden mx-1.5 h-4 w-px bg-border-strong/70 sm:block" aria-hidden="true"></div> <button type="button" id="theme-toggle" aria-label="Toggle color theme" class="group inline-flex h-8 w-8 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-bg-raised hover:text-fg"> <svg xmlns="http://www.w3.org/2000/svg" class="h-[15px] w-[15px] transition-transform duration-500 group-hover:rotate-45 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2"></path> <path d="M12 20v2"></path> <path d="m4.93 4.93 1.41 1.41"></path> <path d="m17.66 17.66 1.41 1.41"></path> <path d="M2 12h2"></path> <path d="M20 12h2"></path> <path d="m6.34 17.66-1.41 1.41"></path> <path d="m19.07 4.93-1.41 1.41"></path> </svg> <svg xmlns="http://www.w3.org/2000/svg" class="hidden h-[15px] w-[15px] transition-transform duration-500 group-hover:-rotate-12 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path> </svg> </button> <script>
+  (function () {
+    if (window.__themeToggleBound) return;
+    window.__themeToggleBound = true;
+    document.addEventListener('click', function (e) {
+      var target = e.target;
+      if (!(target instanceof Element)) return;
+      var btn = target.closest('#theme-toggle');
+      if (!btn) return;
+      var html = document.documentElement;
+      html.classList.add('theme-transition');
+      var current = html.getAttribute('data-theme');
+      var next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      try {
+        localStorage.setItem('theme', next);
+      } catch (err) {}
+      window.setTimeout(function () {
+        html.classList.remove('theme-transition');
+      }, 320);
+    });
+  })();
+</script> </div> </div> </header> <main id="main" class="relative mx-auto w-full max-w-content flex-1 px-screen-px pb-16">  <article class="mx-auto max-w-prose reveal"> <header class="mb-12 flex flex-col gap-5 sm:mb-16"> <div class="flex flex-wrap items-center gap-x-3 gap-y-1"> <time datetime="2026-05-03" class="meta"> May 3, 2026 </time> <span class="meta text-fg-subtle" aria-hidden="true">·</span> <span class="meta">3 min read</span>  <span class="meta-sm rounded-md bg-amber-400/15 px-1.5 py-0.5 text-amber-700 dark:text-amber-300">
+Draft
+</span> </div> <h1 class="text-display-lg font-semibold tracking-tight text-fg"> Part 1: Closer than you think </h1> <p class="text-lg leading-relaxed text-fg-muted"> The mental shift that turns SharePoint admins into SPFx builders. </p>  <div class="border-t border-border/70 pt-5"> <ul class="flex flex-wrap gap-1.5"><li><a href="/tags/spfx" class="chip">SPFx</a></li><li><a href="/tags/microsoft365" class="chip">Microsoft365</a></li></ul> </div> </header> <div class="prose prose-lg max-w-none">  <p>If you can build a SharePoint site, you’re already closer to writing SPFx than you think. Not “with training.” Not “eventually.” Right now.</p>
+<p>The gap between “SharePoint admin” and “SPFx developer” is smaller than it looks. Most of it is unfamiliar tooling and a mental model you haven’t seen yet. Once that clicks, the rest follows.</p>
+<style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var a=(s,i,o)=>{let r=async()=>{await(await s())()},t=typeof i.value=="object"?i.value:void 0,c={rootMargin:t==null?void 0:t.rootMargin},n=new IntersectionObserver(e=>{for(let l of e)if(l.isIntersecting){n.disconnect(),r();break}},c);for(let e of o.children)n.observe(e)};(self.Astro||(self.Astro={})).visible=a;window.dispatchEvent(new Event("astro:visible"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&&(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&&this.lastChild.nodeValue==="astro:end"&&(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&&await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="eu67p" prefix="r1" component-url="/_astro/SpfxDecisionFlow.BMwIgYSC.js" component-export="SpfxDecisionFlow" renderer-url="/_astro/client.Blbc647A.js" props="{}" ssr client="visible" opts="{&quot;name&quot;:&quot;SpfxDecisionFlow&quot;,&quot;value&quot;:true}" await-children><div aria-label="Flow showing decision path from built-in SharePoint options to SPFx when requirements exceed out-of-the-box capabilities" style="padding:1rem;border-radius:0.625rem;border:1px solid rgb(var(--border));background:rgb(var(--bg-raised));display:flex;justify-content:space-between;gap:0.5rem"><div style="flex:1;text-align:center;opacity:1;transition:opacity 0.4s ease;color:rgb(var(--accent))"><div style="margin-bottom:0.5rem;font-size:0.9rem">Built-in options</div><div style="font-size:1.2rem">→</div></div><div style="flex:1;text-align:center;opacity:0.3;transition:opacity 0.4s ease;color:rgb(var(--fg-muted))"><div style="margin-bottom:0.5rem;font-size:0.9rem">Power Platform</div><div style="font-size:1.2rem">→</div></div><div style="flex:1;text-align:center;opacity:0.3;transition:opacity 0.4s ease;color:rgb(var(--fg-muted))"><div style="margin-bottom:0.5rem;font-size:0.9rem">Still not enough</div><div style="font-size:1.2rem">→</div></div><div style="flex:1;text-align:center;opacity:0.3;transition:opacity 0.4s ease;color:rgb(var(--fg-muted))"><div style="margin-bottom:0.5rem;font-size:0.9rem">SPFx</div></div><button style="margin-left:1rem;border:1px solid rgb(var(--border));background:transparent;color:rgb(var(--fg));border-radius:0.5rem;padding:0.25rem 0.5rem;cursor:pointer">Replay</button></div><!--astro:end--></astro-island>
+<h2 id="the-moment-this-usually-shows-up"><a href="#the-moment-this-usually-shows-up" class="heading-link">The moment this usually shows up</a><a href="#the-moment-this-usually-shows-up" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>It starts with something that feels simple. “Can we add a banner to every page?” or “Can this button send documents somewhere automatically?” You try the usual options: built-in web parts, list formatting, Power Automate. At some point, they stop being enough.</p>
+<p>That’s where most people stop and say “we need a developer.” That’s the line this series is about crossing.</p>
+<h2 id="what-spfx-actually-is"><a href="#what-spfx-actually-is" class="heading-link">What SPFx actually is</a><a href="#what-spfx-actually-is" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>SPFx (SharePoint Framework) is <a href="https://learn.microsoft.com/en-us/sharepoint/dev/spfx/sharepoint-framework-overview">Microsoft’s supported way to customize SharePoint Online</a>. It’s how you build custom web parts, page-level UI like banners or headers, command buttons inside lists and libraries, and custom forms. All of it runs in the browser, inside SharePoint. No servers, no classic add-ins, no injecting random JavaScript into pages and hoping it keeps working.</p>
+<h2 id="the-part-nobody-explains-clearly"><a href="#the-part-nobody-explains-clearly" class="heading-link">The part nobody explains clearly</a><a href="#the-part-nobody-explains-clearly" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Every SPFx solution you’ve ever deployed came from the same place: a project on someone’s machine that went through a build step and produced a <code>.sppkg</code> file. That <code>.sppkg</code> file you upload to the app catalog? It’s just the output. Nothing about that process is locked away. You can create that project.</p>
+<h2 id="the-mental-shift"><a href="#the-mental-shift" class="heading-link">The mental shift</a><a href="#the-mental-shift" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>For a long time, I treated SPFx as something developers build, I deploy, and I approve permissions for. That works. But it also means you’re always waiting on someone else for things that often aren’t that complex.</p>
+<p>The shift is realizing that if I can build it myself, I understand it better, and I make better decisions about it. That’s the entire goal of this series.</p>
+<h2 id="the-honest-rule"><a href="#the-honest-rule" class="heading-link">The honest rule</a><a href="#the-honest-rule" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>If you can solve something with list formatting, Power Automate, or built-in web parts, do that instead. SPFx is what you reach for when those stop working.</p>
+<aside class="callout callout--unsourced" role="note"> <div class="callout__head"> <span class="callout__icon" aria-hidden="true">?</span> <span class="callout__title">Unsourced</span> </div> <div class="callout__body"> <p>This is not a formal Microsoft rule. It’s a practical guideline based on how SharePoint solutions tend to evolve in real environments.</p> </div> </aside> 
+<h2 id="what-this-series-covers"><a href="#what-this-series-covers" class="heading-link">What this series covers</a><a href="#what-this-series-covers" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>I’m not trying to turn you into a full-time developer. The scope is much smaller and more useful: run an SPFx project locally, change one thing, see it update, package it, deploy it. Once you’ve done that once, everything else makes more sense. Permissions, packaging, risk, all of it.</p>
+<p>Some parts will feel unfamiliar. You’ll install tools you haven’t used before. You’ll run commands that look a little weird. That’s normal. You don’t need to understand everything immediately. You just need to get something running.</p>
+<p>In <a href="/blog/spfx-for-admins-part-2-build-your-first-web-part">Part 2</a>, we set up the environment and build the project.</p>  </div>  <section data-pagefind-ignore="all" class="mt-20 border-t border-border/70 pt-10"> <h2 class="meta-sm mb-4 text-fg-muted">Comments &amp; reactions</h2> <div class="giscus-mount"></div> </section> <script>(function(){const mapping = "pathname";
+
+  // --- Giscus bootstrap ---------------------------------------------------
+  // Mounts the Giscus client script into .giscus-mount with the current
+  // site theme baked in (prevents flash-of-wrong-theme).
+
+  function giscusTheme() {
+    return document.documentElement.getAttribute('data-theme') === 'dark'
+      ? 'noborder_dark'
+      : 'noborder_light';
+  }
+
+  function mountGiscus() {
+    const mount = document.querySelector('.giscus-mount');
+    if (!mount) return;
+    // Already mounted? (e.g., after Astro view-transition swap)
+    if (mount.querySelector('iframe.giscus-frame, script[src*="giscus"]'))
+      return;
+
+    const s = document.createElement('script');
+    s.src = 'https://giscus.app/client.js';
+    s.dataset.repo = 'charlievogt/charlie.tools';
+    s.dataset.repoId = 'R_kgDOSKys8g';
+    s.dataset.category = 'Comments';
+    s.dataset.categoryId = 'DIC_kwDOSKys8s4C7kX3';
+    s.dataset.mapping = mapping;
+    s.dataset.strict = '0';
+    s.dataset.reactionsEnabled = '1';
+    s.dataset.emitMetadata = '0';
+    s.dataset.inputPosition = 'bottom';
+    s.dataset.theme = giscusTheme();
+    s.dataset.lang = 'en';
+    s.dataset.loading = 'lazy';
+    s.crossOrigin = 'anonymous';
+    s.async = true;
+    mount.appendChild(s);
+  }
+
+  // --- Theme sync ---------------------------------------------------------
+  function pushThemeToGiscus() {
+    const iframe = document.querySelector('iframe.giscus-frame');
+    if (!iframe || !iframe.contentWindow) return;
+    iframe.contentWindow.postMessage(
+      { giscus: { setConfig: { theme: giscusTheme() } } },
+      'https://giscus.app',
+    );
+  }
+
+  // Only bind the observer once per page session.
+  if (!window.__giscusThemeBound) {
+    window.__giscusThemeBound = true;
+    new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        if (m.attributeName === 'data-theme') {
+          pushThemeToGiscus();
+        }
+      }
+    }).observe(document.documentElement, { attributes: true });
+  }
+
+  // Mount now + on every view-transition navigation.
+  mountGiscus();
+  document.addEventListener('astro:page-load', mountGiscus);
+})();</script> </article>  </main> <footer data-pagefind-ignore="all" class="relative mt-32 border-t border-border/70"> <div class="mx-auto flex w-full max-w-content flex-col items-start justify-between gap-6 px-screen-px py-10 sm:flex-row sm:items-center"> <div class="flex items-baseline gap-3"> <span class="group text-sm inline-flex items-baseline font-semibold leading-none" style="letter-spacing: -0.025em;"> <span class="text-fg transition-colors group-hover:text-accent">charlie</span><span class="inline-block text-accent transition-transform duration-300 group-hover:-translate-y-[1px]" style="font-size: 1.15em; line-height: 1; margin: 0 0.01em;" aria-hidden="true">.</span><span class="text-fg transition-colors group-hover:text-accent">tools</span> </span> <span class="meta-sm">&copy; 2026</span> </div> <nav aria-label="Secondary"> <ul class="flex items-center gap-5"> <li> <a href="/rss.xml" class="meta transition-colors hover:text-fg">
+RSS
+</a> </li> <li> <a href="/sitemap-index.xml" class="meta transition-colors hover:text-fg">
+Sitemap
+</a> </li> <li> <a href="https://github.com/charlievogt" rel="noopener" class="meta transition-colors hover:text-fg">
+GitHub
+</a> </li> </ul> </nav> </div> </footer> <script>
+      // Heading-link / heading-anchor click handling.
+      //
+      // - Intercepts both the wrapping title link AND the # icon so we
+      //   can use history.replaceState() instead of letting the browser's
+      //   default navigation push a history entry for every section.
+      //   Result: back button returns to the page the visitor came from,
+      //   not to the previous anchor on the same page.
+      //
+      // - preventDefault here does NOT affect right-click / tap-and-hold
+      //   context menus, so the browser's native "Copy Link" menu for
+      //   the title link still works.
+      //
+      // - When the user clicks the # icon specifically, also copy the
+      //   fully-resolved URL to clipboard and flash the copied state.
+      (function () {
+        if (window.__headingLinkBound) return;
+        window.__headingLinkBound = true;
+
+        document.addEventListener('click', function (e) {
+          // Let modifier-clicks behave normally (open in new tab, etc.)
+          if (
+            e.defaultPrevented ||
+            e.button !== 0 ||
+            e.metaKey ||
+            e.ctrlKey ||
+            e.shiftKey ||
+            e.altKey
+          )
+            return;
+
+          var t = e.target;
+          if (!(t instanceof Element)) return;
+          var link = t.closest('a.heading-link, a.heading-anchor');
+          if (!link) return;
+
+          var href = link.getAttribute('href');
+          if (!href || href.charAt(0) !== '#') return;
+
+          var id = decodeURIComponent(href.slice(1));
+          var target = document.getElementById(id);
+          if (!target) return;
+
+          // Block default nav so it doesn't push a history entry
+          e.preventDefault();
+
+          // Replace the current URL so the section is shareable, but
+          // never push — anchor hopping shouldn't clutter history.
+          try {
+            history.replaceState(null, '', href);
+          } catch (_) {}
+
+          // Smooth scroll to the heading (respecting reduced motion)
+          var reduce =
+            window.matchMedia &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          target.scrollIntoView({
+            behavior: reduce ? 'auto' : 'smooth',
+            block: 'start',
+          });
+
+          // If the # icon was the thing clicked, copy + flash
+          if (link.classList.contains('heading-anchor')) {
+            var url = new URL(href, window.location.href).href;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(url).catch(function () {});
+            }
+            link.setAttribute('data-copied', 'true');
+            window.setTimeout(function () {
+              link.removeAttribute('data-copied');
+            }, 1400);
+          }
+        });
+      })();
+
+      // Smooth-scroll to the anchor when a URL with a hash is loaded.
+      // Browsers normally jump instantly on initial navigation; this
+      // intercepts, resets to the top, and then animates to the target.
+      // Respects prefers-reduced-motion.
+      (function () {
+        function smoothScrollToHash() {
+          var hash = window.location.hash;
+          if (!hash || hash.length < 2) return;
+          if (
+            window.matchMedia &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          )
+            return;
+          var id;
+          try {
+            id = decodeURIComponent(hash.slice(1));
+          } catch (_) {
+            id = hash.slice(1);
+          }
+          var target = document.getElementById(id);
+          if (!target) return;
+          // Instant reset to counteract the browser's auto-jump
+          window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+          // Smooth scroll after two frames so layout has stabilized
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+          });
+        }
+        if (!window.__hashSmoothScroll) {
+          window.__hashSmoothScroll = true;
+          if (document.readyState === 'complete') {
+            smoothScrollToHash();
+          } else {
+            window.addEventListener('load', smoothScrollToHash);
+          }
+          // Handle view-transition navigations too
+          document.addEventListener('astro:page-load', smoothScrollToHash);
+        }
+      })();
+
+      // Heading-anchor enhancement for non-MDX pages (.astro files like
+      // About). Mirrors what the rehype plugin does for markdown posts:
+      // wrap text in <a.heading-link>, append <a.heading-anchor> with
+      // the same SVG icon. Idempotent — skips headings that already
+      // have the markup.
+      (function () {
+        if (window.__headingEnhanceBound) return;
+        window.__headingEnhanceBound = true;
+
+        var ICON_SVG =
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+          '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>' +
+          '<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>' +
+          '</svg>';
+
+        function slugify(s) {
+          return (s || '')
+            .toLowerCase()
+            .trim()
+            .replace(/['’`"]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        }
+
+        function enhance(h) {
+          // Already wrapped (rehype handled it on a markdown page)?
+          if (h.querySelector(':scope > a.heading-link')) return;
+
+          if (!h.id) {
+            var slug = slugify(h.textContent);
+            if (!slug) return;
+            // Avoid id collision
+            var base = slug;
+            var n = 2;
+            while (
+              document.getElementById(slug) &&
+              document.getElementById(slug) !== h
+            ) {
+              slug = base + '-' + n++;
+            }
+            h.id = slug;
+          }
+
+          var hash = '#' + h.id;
+          var link = document.createElement('a');
+          link.href = hash;
+          link.className = 'heading-link';
+          while (h.firstChild) link.appendChild(h.firstChild);
+          h.appendChild(link);
+
+          var anchor = document.createElement('a');
+          anchor.href = hash;
+          anchor.className = 'heading-anchor';
+          anchor.setAttribute('aria-label', 'Copy link to this section');
+          anchor.tabIndex = -1;
+          anchor.innerHTML = ICON_SVG;
+          h.appendChild(anchor);
+        }
+
+        function enhanceAll() {
+          var headings = document.querySelectorAll(
+            '.prose h2, .prose h3, .prose h4, .prose h5, .prose h6',
+          );
+          for (var i = 0; i < headings.length; i++) enhance(headings[i]);
+        }
+
+        enhanceAll();
+        document.addEventListener('astro:page-load', enhanceAll);
+      })();
+    </script> </body> </html>

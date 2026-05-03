@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /share/
 
 Sitemap: https://charlie.tools/sitemap-index.xml
