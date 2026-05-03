@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"> <head><!-- Charset, viewport, theme --><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="Astro v5.18.1"><meta name="color-scheme" content="light dark"><!-- Run before first paint to avoid flash of wrong theme. Re-runs on
+<!DOCTYPE html><html lang="en" data-os="windows"> <head><!-- Charset, viewport, theme --><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="Astro v5.18.1"><meta name="color-scheme" content="light dark"><!-- Run before first paint to avoid flash of wrong theme. Re-runs on
      every Astro view-transition navigation so the theme attribute is
      reasserted onto the live document. --><script data-astro-rerun>
   (function () {
@@ -28,6 +28,30 @@
       var current = document.documentElement.getAttribute('data-theme');
       if (current && e && e.newDocument) {
         e.newDocument.documentElement.setAttribute('data-theme', current);
+      }
+    });
+  })();
+</script><!-- OS preference — read the cookie before paint so OsCommand /
+     OsText render the right variant immediately. Default = windows.
+     Re-runs on every view-transition navigation. --><script data-astro-rerun>
+  (function () {
+    try {
+      var m = document.cookie.match(/(?:^|; )os-preference=([^;]+)/);
+      var os = m && /^(windows|mac|linux)$/.test(m[1]) ? m[1] : 'windows';
+      document.documentElement.setAttribute('data-os', os);
+    } catch (e) {
+      document.documentElement.setAttribute('data-os', 'windows');
+    }
+  })();
+</script><!-- Carry data-os onto the incoming document for view-transition nav,
+     same trick as theme. --><script>
+  (function () {
+    if (window.__charlieOsPersistBound) return;
+    window.__charlieOsPersistBound = true;
+    document.addEventListener('astro:before-swap', function (e) {
+      var current = document.documentElement.getAttribute('data-os');
+      if (current && e && e.newDocument) {
+        e.newDocument.documentElement.setAttribute('data-os', current);
       }
     });
   })();
