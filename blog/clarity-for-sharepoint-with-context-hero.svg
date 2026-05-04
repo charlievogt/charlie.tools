@@ -1,0 +1,177 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="Side-by-side comparison of two Clarity heatmaps on a SharePoint page. The left panel, labeled DEFAULT, shows two click clusters on Policies and Forms but only an anonymous session row. The right panel, labeled WITH CONTEXT, shows the same two clusters with callouts: Lending owns the Policies cluster, Member Services owns the Forms cluster.">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <radialGradient id="heat" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#ff4d2e" stop-opacity="0.9"/>
+      <stop offset="50%"  stop-color="#ff8a3d" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#ffd84a" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- LEFT PANEL: DEFAULT -->
+  <g transform="translate(60, 90)">
+    <text x="0" y="-18" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700"
+          fill="#94a3b8" letter-spacing="3">DEFAULT</text>
+
+    <g filter="url(#shadow)">
+      <rect x="0" y="0" width="500" height="430" rx="12" fill="#f8fafc"/>
+
+      <rect x="0" y="0" width="500" height="32" fill="#e2e8f0"/>
+      <rect x="0" y="22" width="500" height="10" fill="#e2e8f0"/>
+      <g transform="translate(14, 11)" fill="#94a3b8">
+        <rect x="0"  y="0"  width="3" height="3" rx="0.5"/>
+        <rect x="5"  y="0"  width="3" height="3" rx="0.5"/>
+        <rect x="10" y="0"  width="3" height="3" rx="0.5"/>
+        <rect x="0"  y="5"  width="3" height="3" rx="0.5"/>
+        <rect x="5"  y="5"  width="3" height="3" rx="0.5"/>
+        <rect x="10" y="5"  width="3" height="3" rx="0.5"/>
+        <rect x="0"  y="10" width="3" height="3" rx="0.5"/>
+        <rect x="5"  y="10" width="3" height="3" rx="0.5"/>
+        <rect x="10" y="10" width="3" height="3" rx="0.5"/>
+      </g>
+      <text x="40"  y="20" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">SharePoint</text>
+      <text x="115" y="20" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#94a3b8">›</text>
+      <text x="128" y="20" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#475569">Member Services</text>
+
+      <text x="22" y="64" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Member Services Hub</text>
+      <text x="22" y="82" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b">Forms · Policies · How-to</text>
+
+      <g transform="translate(22, 102)">
+        <rect x="0"   y="0" width="108" height="62" rx="6" fill="#fff" stroke="#cbd5e1"/>
+        <rect x="116" y="0" width="108" height="62" rx="6" fill="#fff" stroke="#cbd5e1"/>
+        <rect x="232" y="0" width="108" height="62" rx="6" fill="#fff" stroke="#cbd5e1"/>
+        <rect x="348" y="0" width="108" height="62" rx="6" fill="#fff" stroke="#cbd5e1"/>
+        <text x="10"  y="20" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">News</text>
+        <text x="10"  y="34" font-family="Inter, system-ui, sans-serif" font-size="9"  fill="#64748b">Latest</text>
+        <text x="126" y="20" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Policies</text>
+        <text x="126" y="34" font-family="Inter, system-ui, sans-serif" font-size="9"  fill="#64748b">PDF</text>
+        <text x="242" y="20" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Forms</text>
+        <text x="242" y="34" font-family="Inter, system-ui, sans-serif" font-size="9"  fill="#64748b">PDF</text>
+        <text x="358" y="20" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">FAQ</text>
+        <text x="358" y="34" font-family="Inter, system-ui, sans-serif" font-size="9"  fill="#64748b">How-to</text>
+      </g>
+
+      <g transform="translate(22, 240)" opacity="0.5">
+        <rect x="0" y="0"  width="280" height="6" rx="3" fill="#cbd5e1"/>
+        <rect x="0" y="14" width="240" height="6" rx="3" fill="#cbd5e1"/>
+        <rect x="0" y="28" width="260" height="6" rx="3" fill="#cbd5e1"/>
+      </g>
+
+      <g>
+        <circle cx="184" cy="135" r="42" fill="url(#heat)"/>
+        <circle cx="190" cy="130" r="32" fill="url(#heat)"/>
+        <circle cx="306" cy="135" r="58" fill="url(#heat)"/>
+        <circle cx="314" cy="128" r="44" fill="url(#heat)"/>
+        <circle cx="68"  cy="135" r="22" fill="url(#heat)" opacity="0.4"/>
+        <circle cx="426" cy="135" r="18" fill="url(#heat)" opacity="0.35"/>
+      </g>
+
+      <rect x="22" y="350" width="456" height="58" rx="8" fill="#fff" stroke="#cbd5e1"/>
+      <circle cx="42" cy="379" r="6" fill="#94a3b8"/>
+      <text x="58" y="376" font-family="Menlo, Consolas, monospace" font-size="11" fill="#64748b">sess-a8f2…</text>
+      <text x="58" y="394" font-family="Inter, system-ui, sans-serif" font-size="11" font-style="italic" fill="#94a3b8">Anonymous</text>
+    </g>
+  </g>
+
+  <!-- ARROW -->
+  <g transform="translate(580, 305)">
+    <line x1="0" y1="0" x2="40" y2="0" stroke="#64748b" stroke-width="2" stroke-linecap="round"/>
+    <polyline points="30,-7 40,0 30,7" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- RIGHT PANEL: WITH CONTEXT -->
+  <g transform="translate(640, 90)">
+    <text x="0" y="-18" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700"
+          fill="#3a96dd" letter-spacing="3">WITH CONTEXT</text>
+
+    <g filter="url(#shadow)">
+      <rect x="0" y="0" width="500" height="430" rx="12" fill="#f8fafc" stroke="#3a96dd" stroke-width="1.5"/>
+
+      <rect x="0" y="0" width="500" height="32" fill="#e2e8f0"/>
+      <rect x="0" y="22" width="500" height="10" fill="#e2e8f0"/>
+      <g transform="translate(14, 11)" fill="#94a3b8">
+        <rect x="0"  y="0"  width="3" height="3" rx="0.5"/>
+        <rect x="5"  y="0"  width="3" height="3" rx="0.5"/>
+        <rect x="10" y="0"  width="3" height="3" rx="0.5"/>
+        <rect x="0"  y="5"  width="3" height="3" rx="0.5"/>
+        <rect x="5"  y="5"  width="3" height="3" rx="0.5"/>
+        <rect x="10" y="5"  width="3" height="3" rx="0.5"/>
+        <rect x="0"  y="10" width="3" height="3" rx="0.5"/>
+        <rect x="5"  y="10" width="3" height="3" rx="0.5"/>
+        <rect x="10" y="10" width="3" height="3" rx="0.5"/>
+      </g>
+      <text x="40"  y="20" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">SharePoint</text>
+      <text x="115" y="20" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#94a3b8">›</text>
+      <text x="128" y="20" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#475569">Member Services</text>
+
+      <text x="22" y="64" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Member Services Hub</text>
+      <text x="22" y="82" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b">Forms · Policies · How-to</text>
+
+      <g transform="translate(22, 102)">
+        <rect x="0"   y="0" width="108" height="62" rx="6" fill="#fff" stroke="#cbd5e1"/>
+        <rect x="116" y="0" width="108" height="62" rx="6" fill="#fff" stroke="#cbd5e1"/>
+        <rect x="232" y="0" width="108" height="62" rx="6" fill="#fff" stroke="#cbd5e1"/>
+        <rect x="348" y="0" width="108" height="62" rx="6" fill="#fff" stroke="#cbd5e1"/>
+        <text x="10"  y="20" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">News</text>
+        <text x="10"  y="34" font-family="Inter, system-ui, sans-serif" font-size="9"  fill="#64748b">Latest</text>
+        <text x="126" y="20" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Policies</text>
+        <text x="126" y="34" font-family="Inter, system-ui, sans-serif" font-size="9"  fill="#64748b">PDF</text>
+        <text x="242" y="20" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Forms</text>
+        <text x="242" y="34" font-family="Inter, system-ui, sans-serif" font-size="9"  fill="#64748b">PDF</text>
+        <text x="358" y="20" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">FAQ</text>
+        <text x="358" y="34" font-family="Inter, system-ui, sans-serif" font-size="9"  fill="#64748b">How-to</text>
+      </g>
+
+      <g>
+        <circle cx="184" cy="135" r="42" fill="url(#heat)"/>
+        <circle cx="190" cy="130" r="32" fill="url(#heat)"/>
+        <circle cx="306" cy="135" r="58" fill="url(#heat)"/>
+        <circle cx="314" cy="128" r="44" fill="url(#heat)"/>
+        <circle cx="68"  cy="135" r="22" fill="url(#heat)" opacity="0.4"/>
+        <circle cx="426" cy="135" r="18" fill="url(#heat)" opacity="0.35"/>
+      </g>
+
+      <!-- CALLOUT: Lending on Policies — centered on cluster x=190 -->
+      <g transform="translate(150, 215)">
+        <polygon points="40,-9 34,-1 46,-1" fill="#9b59b6"/>
+        <rect x="0" y="-1" width="80" height="46" rx="6" fill="#fff" stroke="#9b59b6" stroke-width="1.5"/>
+        <circle cx="11" cy="13" r="3" fill="#9b59b6"/>
+        <text x="20" y="17" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="700" fill="#0f172a">Lending</text>
+        <text x="9"  y="33" font-family="Inter, system-ui, sans-serif" font-size="9" fill="#64748b">78% · 5+ yrs</text>
+      </g>
+
+      <!-- CALLOUT: Member Services on Forms — centered on cluster x=314 -->
+      <g transform="translate(258, 215)">
+        <polygon points="56,-9 50,-1 62,-1" fill="#3a96dd"/>
+        <rect x="0" y="-1" width="112" height="46" rx="6" fill="#fff" stroke="#3a96dd" stroke-width="1.5"/>
+        <circle cx="11" cy="13" r="3" fill="#3a96dd"/>
+        <text x="20" y="17" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="700" fill="#0f172a">Member Svcs</text>
+        <text x="9"  y="33" font-family="Inter, system-ui, sans-serif" font-size="9" fill="#64748b">92% · &lt;90d · Mobile</text>
+      </g>
+
+      <!-- Two contrasting session rows -->
+      <rect x="22" y="290" width="220" height="38" rx="6" fill="#fff" stroke="#3a96dd" stroke-width="1.2"/>
+      <circle cx="36" cy="309" r="4" fill="#3a96dd"/>
+      <text x="46" y="305" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">M. Olson</text>
+      <text x="46" y="320" font-family="Inter, system-ui, sans-serif" font-size="9" fill="#64748b">Member Svcs · &lt;90d · Mobile</text>
+
+      <rect x="258" y="290" width="220" height="38" rx="6" fill="#fff" stroke="#9b59b6" stroke-width="1.2"/>
+      <circle cx="272" cy="309" r="4" fill="#9b59b6"/>
+      <text x="282" y="305" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="700" fill="#0f172a">D. Nguyen</text>
+      <text x="282" y="320" font-family="Inter, system-ui, sans-serif" font-size="9" fill="#64748b">Lending · 7 yrs · Desktop</text>
+
+      <text x="250" y="375" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-style="italic" fill="#475569">two audiences, one page</text>
+      <text x="250" y="395" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#94a3b8">maybe this is two pages</text>
+    </g>
+  </g>
+
+  <text x="600" y="572" font-family="Inter, system-ui, sans-serif" font-size="13" fill="#94a3b8" text-anchor="middle">Same heatmap. Different verdict.</text>
+</svg>
