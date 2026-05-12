@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>charlie.tools</title><description>Charlie Vogt writes about PowerShell, SPFx, Microsoft 365, and homelab infrastructure.</description><link>https://charlie.tools/</link><language>en-us</language><item><title>Trailing-month tabs in PnP Modern Search that don&apos;t need a monthly redeploy</title><link>https://charlie.tools/posts/pnp-search-trailing-month-tabs/</link><guid isPermaLink="true">https://charlie.tools/posts/pnp-search-trailing-month-tabs/</guid><description>A single Handlebars template generates a self-advancing twelve-month tab strip. No rebuilds, no SPFx helpers, no JavaScript.</description><pubDate>Tue, 12 May 2026 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;import Callout from &apos;../../components/mdx/Callout.astro&apos;;
-import RepoLink from &apos;../../components/mdx/RepoLink.astro&apos;;
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>charlie.tools</title><description>Charlie Vogt writes about PowerShell, SPFx, Microsoft 365, and homelab infrastructure.</description><link>https://charlie.tools/</link><language>en-us</language><item><title>Trailing-month tabs in PnP Modern Search that don&apos;t need a monthly redeploy</title><link>https://charlie.tools/posts/pnp-search-trailing-month-tabs/</link><guid isPermaLink="true">https://charlie.tools/posts/pnp-search-trailing-month-tabs/</guid><description>A single Handlebars template generates a self-advancing twelve-month tab strip. No rebuilds, no SPFx helpers, no JavaScript.</description><pubDate>Tue, 12 May 2026 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;import RepoLink from &apos;../../components/mdx/RepoLink.astro&apos;;
 import { MonthTabsScrubber } from &apos;../../components/mdx/MonthTabsScrubber&apos;;&lt;/p&gt;
 &lt;p&gt;A SharePoint Online site I worked on had a &quot;New Employee Bios&quot; page with a tab strip that looked like this:&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;Jun 2025 | Jul 2025 | Aug 2025 | … | Apr 2026 | May 2026&lt;/code&gt;&lt;/p&gt;
@@ -67,11 +66,23 @@ import { MonthTabsScrubber } from &apos;../../components/mdx/MonthTabsScrubber&a
 &lt;h3&gt;2. The search box wiring path has a tail you don&apos;t want&lt;/h3&gt;
 &lt;p&gt;When you connect a Search Box web part to a Search Results web part programmatically, the canvas content stores a dynamic data path on the Results web part like this:&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;WebPart.{searchBoxWpId}.{searchBoxInstanceId}:pnpSearchBoxWebPart:inputQueryText&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;That trailing &lt;code&gt;:inputQueryText&lt;/code&gt; is wrong. SPFx parses the colon-separated path as &lt;code&gt;&amp;lt;webPart&amp;gt;:&amp;lt;propertyId&amp;gt;:&amp;lt;fieldName&amp;gt;&lt;/code&gt; and then walks &lt;code&gt;.fieldName&lt;/code&gt; on whatever the propertyId resolves to. The search box&apos;s &lt;a href=&quot;https://github.com/microsoft-search/pnp-modern-search/blob/4.21.0/search-parts/src/webparts/searchBox/SearchBoxWebPart.ts#L427&quot;&gt;&lt;code&gt;getPropertyValue&lt;/code&gt;&lt;/a&gt; returns the raw query string, not an annotated object, so walking &lt;code&gt;.inputQueryText&lt;/code&gt; on a string returns undefined, and the connected Results web part receives an empty query forever. The data source still fires on each keystroke. It just has nothing to filter on.&lt;/p&gt;
-&lt;p&gt;The correct form is the bare &lt;code&gt;WebPart.{wpId}.{instanceId}:pnpSearchBoxWebPart&lt;/code&gt;. I confirmed by inspecting the canvas content of a PnP-built People Directory page that works correctly. Same dynamic-data path, no trailing field. Drop the suffix and the connection lights up.&lt;/p&gt;
-
-I couldn&apos;t find official docs explaining how the trailing colon segment is supposed to resolve when the propertyId returns a primitive instead of an object. The fix is empirical: I observed the symptom, compared against a working page, patched the path, and confirmed the search filter started working. The mechanism above is my best guess from reading the SearchBox source.
-
+&lt;p&gt;That trailing &lt;code&gt;:inputQueryText&lt;/code&gt; is wrong, and tracing the SPFx source shows exactly why. The &lt;code&gt;&amp;lt;webPart&amp;gt;:&amp;lt;propertyId&amp;gt;:&amp;lt;propertyPath&amp;gt;&lt;/code&gt; reference resolves inside &lt;code&gt;DynamicDataProvider._getData()&lt;/code&gt;. It fetches the value by calling the source&apos;s &lt;code&gt;getPropertyValue(propertyId)&lt;/code&gt;, then walks the &lt;code&gt;propertyPath&lt;/code&gt; against that value with &lt;code&gt;hasOwnProperty&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-js&quot;&gt;// @microsoft/sp-component-base, DynamicDataProvider.js
+var data = dataSource.getPropertyValue(dataReference.property);
+if (data &amp;amp;&amp;amp; dataReference.propertyPath) {
+  var subpaths = dataReference.propertyPath.split(&apos;.&apos;);
+  subpaths.forEach(function (subpath) {
+    // ...
+    else if (data.hasOwnProperty(subProperty)) {
+      data = data[subProperty];
+    } else {
+      data = undefined;
+    }
+  });
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The search box&apos;s &lt;a href=&quot;https://github.com/microsoft-search/pnp-modern-search/blob/4.21.0/search-parts/src/webparts/searchBox/SearchBoxWebPart.ts#L427&quot;&gt;&lt;code&gt;getPropertyValue&lt;/code&gt;&lt;/a&gt; returns the raw query string, not an annotated object. Primitive strings have no own properties, so &lt;code&gt;&quot;Hassan&quot;.hasOwnProperty(&quot;inputQueryText&quot;)&lt;/code&gt; is &lt;code&gt;false&lt;/code&gt;, the else branch runs, and &lt;code&gt;data&lt;/code&gt; becomes &lt;code&gt;undefined&lt;/code&gt;. The connected Results web part receives an empty query forever. The data source still fires on each keystroke. It just has nothing to filter on.&lt;/p&gt;
+&lt;p&gt;The correct form is the bare &lt;code&gt;WebPart.{wpId}.{instanceId}:pnpSearchBoxWebPart&lt;/code&gt; with no &lt;code&gt;propertyPath&lt;/code&gt;. With the path empty, SPFx skips the &lt;code&gt;subpaths.forEach&lt;/code&gt; walk entirely and returns the string directly. I confirmed by inspecting the canvas content of a PnP-built People Directory page that works correctly; same dynamic-data reference shape, no trailing field. Drop the suffix and the connection lights up.&lt;/p&gt;
 &lt;h3&gt;3. PnP&apos;s CSS scoper silently swallows &lt;code&gt;@keyframes&lt;/code&gt;&lt;/h3&gt;
 &lt;p&gt;For the tab cross-fade I wrote what should be a normal CSS animation:&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&quot;language-css&quot;&gt;@keyframes bio-card-in {
