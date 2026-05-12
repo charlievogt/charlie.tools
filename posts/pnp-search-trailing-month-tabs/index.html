@@ -1,0 +1,506 @@
+<!DOCTYPE html><html lang="en" data-os="windows"> <head><!-- Charset, viewport, theme --><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="Astro v5.18.1"><meta name="color-scheme" content="light dark"><!-- Run before first paint to avoid flash of wrong theme. Re-runs on
+     every Astro view-transition navigation so the theme attribute is
+     reasserted onto the live document. --><script data-astro-rerun>
+  (function () {
+    try {
+      var stored = localStorage.getItem('theme');
+      var prefersDark = window.matchMedia(
+        '(prefers-color-scheme: dark)',
+      ).matches;
+      var theme =
+        stored === 'dark' || stored === 'light'
+          ? stored
+          : prefersDark
+            ? 'dark'
+            : 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    } catch (e) {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  })();
+</script><!-- Carry the current theme onto the incoming document before Astro's
+     ClientRouter swaps it in, so view-transition navigation can't show
+     a flash of the wrong theme between pages. --><script>
+  (function () {
+    if (window.__charlieThemePersistBound) return;
+    window.__charlieThemePersistBound = true;
+    document.addEventListener('astro:before-swap', function (e) {
+      var current = document.documentElement.getAttribute('data-theme');
+      if (current && e && e.newDocument) {
+        e.newDocument.documentElement.setAttribute('data-theme', current);
+      }
+    });
+  })();
+</script><!-- OS preference — read the cookie before paint so OsCommand /
+     OsText render the right variant immediately. Default = windows.
+     Re-runs on every view-transition navigation. --><script data-astro-rerun>
+  (function () {
+    try {
+      var m = document.cookie.match(/(?:^|; )os-preference=([^;]+)/);
+      var os = m && /^(windows|mac|linux)$/.test(m[1]) ? m[1] : 'windows';
+      document.documentElement.setAttribute('data-os', os);
+    } catch (e) {
+      document.documentElement.setAttribute('data-os', 'windows');
+    }
+  })();
+</script><!-- Carry data-os onto the incoming document for view-transition nav,
+     same trick as theme. --><script>
+  (function () {
+    if (window.__charlieOsPersistBound) return;
+    window.__charlieOsPersistBound = true;
+    document.addEventListener('astro:before-swap', function (e) {
+      var current = document.documentElement.getAttribute('data-os');
+      if (current && e && e.newDocument) {
+        e.newDocument.documentElement.setAttribute('data-os', current);
+      }
+    });
+  })();
+</script><!-- Canonical & favicons --><link rel="canonical" href="https://charlie.tools/posts/pnp-search-trailing-month-tabs/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="sitemap" href="/sitemap-index.xml"><link rel="alternate" type="application/rss+xml" title="charlie.tools" href="https://charlie.tools/rss.xml"><!-- Primary meta --><title>Trailing-month tabs in PnP Modern Search that don&#39;t need a monthly redeploy — charlie.tools</title><meta name="title" content="Trailing-month tabs in PnP Modern Search that don't need a monthly redeploy — charlie.tools"><meta name="description" content="A single Handlebars template generates a self-advancing twelve-month tab strip. No rebuilds, no SPFx helpers, no JavaScript."><meta name="author" content="Charlie Vogt"><meta name="keywords" content="SPFx, Microsoft365, PnPModernSearch"><!-- Open Graph --><meta property="og:type" content="article"><meta property="og:url" content="https://charlie.tools/posts/pnp-search-trailing-month-tabs/"><meta property="og:title" content="Trailing-month tabs in PnP Modern Search that don't need a monthly redeploy — charlie.tools"><meta property="og:description" content="A single Handlebars template generates a self-advancing twelve-month tab strip. No rebuilds, no SPFx helpers, no JavaScript."><meta property="og:image" content="https://charlie.tools/og-default.png"><meta property="og:site_name" content="charlie.tools"><meta property="article:published_time" content="2026-05-12T00:00:00.000Z"><meta property="article:tag" content="SPFx"><meta property="article:tag" content="Microsoft365"><meta property="article:tag" content="PnPModernSearch"><!-- Twitter --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:url" content="https://charlie.tools/posts/pnp-search-trailing-month-tabs/"><meta name="twitter:title" content="Trailing-month tabs in PnP Modern Search that don't need a monthly redeploy — charlie.tools"><meta name="twitter:description" content="A single Handlebars template generates a self-advancing twelve-month tab strip. No rebuilds, no SPFx helpers, no JavaScript."><meta name="twitter:image" content="https://charlie.tools/og-default.png"><!-- Cloudflare Web Analytics — production builds only. The preview server
+     runs `astro dev` so import.meta.env.PROD is false there and the beacon
+     is omitted, keeping preview traffic out of the dashboard. --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;b0656b73b611467e98011b1577c1c873&quot;}"></script><!-- Umami self-hosted analytics — production only, same reason. Runs on a
+     first-party subdomain so default ad blockers don't drop it the way they
+     drop cloudflareinsights.com. --><script defer src="https://a.charlie.tools/u" data-website-id="479b3fda-d983-49ba-b889-3e2cfaaa4879"></script><!-- Umami session recorder — 100% sample for now while traffic is low,
+     moderate masking, 5min cap. Dial sample-rate down once volume grows.
+     PROD only so preview traffic isn't recorded. --><script defer src="https://a.charlie.tools/recorder.js" data-website-id="479b3fda-d983-49ba-b889-3e2cfaaa4879" data-sample-rate="1" data-mask-level="moderate" data-max-duration="300000"></script><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.BFfqj1ee.js"></script><link rel="stylesheet" href="/_astro/_slug_.CQnHOXT-.css">
+<style>.repo-badge[data-astro-cid-4y6e65ve]{display:inline-flex;align-items:center;gap:.4rem;padding:.25rem .6rem;border:1px solid rgb(var(--border));background:rgb(var(--bg-raised));border-radius:9999px;font-family:Geist Mono Variable,Geist Mono,ui-monospace,monospace;font-size:.6875rem;line-height:1;letter-spacing:.02em;color:rgb(var(--fg-muted));text-decoration:none;transition:border-color .16s ease,color .16s ease,background-color .16s ease,transform .16s ease}.repo-badge[data-astro-cid-4y6e65ve]:hover,.repo-badge[data-astro-cid-4y6e65ve]:focus-visible{border-color:rgb(var(--accent) / .55);color:rgb(var(--accent));background:rgb(var(--accent) / .06);outline:none;transform:translateY(-1px)}.repo-badge__icon[data-astro-cid-4y6e65ve]{color:currentColor;flex-shrink:0}.repo-badge__text[data-astro-cid-4y6e65ve]{color:inherit}.repo-badge--sm[data-astro-cid-4y6e65ve]{padding:.15rem .5rem;font-size:.625rem;gap:.3rem}.repo-badge--sm[data-astro-cid-4y6e65ve] .repo-badge__icon[data-astro-cid-4y6e65ve]{width:11px;height:11px}
+</style><script type="module" src="/_astro/page.IvKoM_B8.js"></script><style>.callout{margin:2rem 0;padding:1rem 1.25rem 1.1rem;border:1px solid rgb(var(--border));border-left-width:3px;border-radius:.625rem;background:rgb(var(--bg-raised));font-size:.95em}.callout__head{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;font-family:Geist Mono Variable,Geist Mono,ui-monospace,monospace;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase}.callout__icon{display:inline-flex;width:1.15rem;height:1.15rem;align-items:center;justify-content:center;border-radius:9999px;font-size:.75rem;font-weight:700;line-height:1}.callout__body{color:rgb(var(--fg) / .9);line-height:1.6}.callout__body>:first-child{margin-top:0}.callout__body>:last-child{margin-bottom:0}.callout--note{border-left-color:rgb(var(--accent))}.callout--note .callout__title{color:rgb(var(--accent))}.callout--note .callout__icon{background:rgb(var(--accent) / .15);color:rgb(var(--accent))}.callout--tip{border-left-color:#10b981}.callout--tip .callout__title{color:#059669}.callout--tip .callout__icon{background:#10b9812e;color:#059669}html[data-theme=dark] .callout--tip .callout__title,html[data-theme=dark] .callout--tip .callout__icon{color:#34d399}.callout--warning{border-left-color:#f59e0b}.callout--warning .callout__title{color:#b45309}.callout--warning .callout__icon{background:#f59e0b2e;color:#b45309}html[data-theme=dark] .callout--warning .callout__title,html[data-theme=dark] .callout--warning .callout__icon{color:#fbbf24}.callout--unsourced{border-left-color:rgb(var(--fg-subtle));background:rgb(var(--bg))}.callout--unsourced .callout__title{color:rgb(var(--fg-muted))}.callout--unsourced .callout__icon{background:rgb(var(--fg-subtle) / .2);color:rgb(var(--fg-muted));font-family:Geist Mono Variable,Geist Mono,ui-monospace,monospace}
+</style><style>.prose a.repo-link,a.repo-link{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:.875rem;margin:1.75rem 0;padding:.875rem 1.125rem;border:1px solid rgb(var(--border));border-radius:.625rem;background:rgb(var(--bg-raised));color:rgb(var(--fg));text-decoration:none;transition:border-color .15s ease,transform .15s ease,background .15s ease}.prose a.repo-link:hover,a.repo-link:hover{border-color:rgb(var(--accent));transform:translateY(-1px);text-decoration:none}.repo-link__icon{color:rgb(var(--fg-muted));flex-shrink:0}.repo-link:hover .repo-link__icon{color:rgb(var(--fg))}.repo-link__body{min-width:0}.repo-link__name{font-family:ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,monospace;font-size:.95em;color:rgb(var(--fg));display:flex;align-items:baseline;flex-wrap:wrap;gap:.15rem}.repo-link__owner,.repo-link__sep{color:rgb(var(--fg-muted))}.repo-link__repo{color:rgb(var(--fg));font-weight:600}.repo-link__ref{margin-left:.4rem;color:rgb(var(--accent));font-size:.85em}.repo-link__desc{margin:.25rem 0 0;color:rgb(var(--fg-muted));font-size:.9em;line-height:1.45}.repo-link__path{margin-top:.25rem;font-family:ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,monospace;font-size:.82em;color:rgb(var(--fg-muted))}.repo-link__arrow{color:rgb(var(--fg-subtle));font-size:1.05em;transition:transform .15s ease,color .15s ease}.repo-link:hover .repo-link__arrow{color:rgb(var(--accent));transform:translate(2px,-2px)}
+</style></head> <body class="flex min-h-svh flex-col"> <header data-pagefind-ignore="all" class="fixed inset-x-0 top-0 z-40 border-b border-border/70 bg-bg/75 backdrop-blur-xl supports-[backdrop-filter]:bg-bg/60"> <div class="mx-auto flex h-14 w-full max-w-content items-center justify-between gap-4 px-screen-px"> <!-- Brand --> <a href="/" class="inline-flex items-center" aria-label="charlie.tools — home"> <span class="group text-lg inline-flex items-baseline font-semibold leading-none" style="letter-spacing: -0.025em;"> <span class="text-fg transition-colors group-hover:text-accent">charlie</span><span class="inline-block text-accent transition-transform duration-300 group-hover:-translate-y-[1px]" style="font-size: 1.15em; line-height: 1; margin: 0 0.01em;" aria-hidden="true">.</span><span class="text-fg transition-colors group-hover:text-accent">tools</span> </span> </a> <!-- Nav + toggle --> <div class="flex items-center gap-1"> <nav aria-label="Primary" class="hidden items-center sm:flex"> <ul class="flex items-center"> <li> <a href="/posts" class="relative inline-flex items-center rounded-md px-3 py-1.5 text-sm transition-colors text-fg" aria-current="page"> Posts <span class="absolute inset-x-3 -bottom-[13px] h-px bg-accent" aria-hidden="true"></span> </a> </li><li> <a href="/tags" class="relative inline-flex items-center rounded-md px-3 py-1.5 text-sm transition-colors text-fg-muted hover:text-fg"> Tags  </a> </li><li> <a href="/about" class="relative inline-flex items-center rounded-md px-3 py-1.5 text-sm transition-colors text-fg-muted hover:text-fg"> About  </a> </li> </ul> </nav> <div class="contents sm:hidden" data-astro-cid-6aabv5oc> <button type="button" id="mobile-menu-trigger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu-panel" class="group inline-flex h-8 w-8 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-bg-raised hover:text-fg" data-astro-cid-6aabv5oc> <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" class="mobile-menu-icon" data-astro-cid-6aabv5oc> <line class="mobile-menu-icon__line mobile-menu-icon__line--top" x1="2" y1="5" x2="14" y2="5" data-astro-cid-6aabv5oc></line> <line class="mobile-menu-icon__line mobile-menu-icon__line--mid" x1="2" y1="8" x2="14" y2="8" data-astro-cid-6aabv5oc></line> <line class="mobile-menu-icon__line mobile-menu-icon__line--bot" x1="2" y1="11" x2="14" y2="11" data-astro-cid-6aabv5oc></line> </svg> </button> <div id="mobile-menu-panel" role="dialog" aria-modal="true" aria-label="Site navigation" class="mobile-menu-panel" hidden data-astro-cid-6aabv5oc> <nav aria-label="Mobile navigation" data-astro-cid-6aabv5oc> <ol class="mobile-menu-list" data-astro-cid-6aabv5oc> <li class="mobile-menu-item" style="--i: 0" data-astro-cid-6aabv5oc> <a href="/posts" aria-current="page" class="mobile-menu-link mobile-menu-link--active" data-astro-cid-6aabv5oc> <span class="mobile-menu-num" data-astro-cid-6aabv5oc> 01 </span> <span class="mobile-menu-label" data-astro-cid-6aabv5oc>Posts</span> <span class="mobile-menu-arrow" aria-hidden="true" data-astro-cid-6aabv5oc>
+→
+</span> </a> </li><li class="mobile-menu-item" style="--i: 1" data-astro-cid-6aabv5oc> <a href="/tags" class="mobile-menu-link" data-astro-cid-6aabv5oc> <span class="mobile-menu-num" data-astro-cid-6aabv5oc> 02 </span> <span class="mobile-menu-label" data-astro-cid-6aabv5oc>Tags</span> <span class="mobile-menu-arrow" aria-hidden="true" data-astro-cid-6aabv5oc>
+→
+</span> </a> </li><li class="mobile-menu-item" style="--i: 2" data-astro-cid-6aabv5oc> <a href="/about" class="mobile-menu-link" data-astro-cid-6aabv5oc> <span class="mobile-menu-num" data-astro-cid-6aabv5oc> 03 </span> <span class="mobile-menu-label" data-astro-cid-6aabv5oc>About</span> <span class="mobile-menu-arrow" aria-hidden="true" data-astro-cid-6aabv5oc>
+→
+</span> </a> </li> </ol> </nav> </div> </div>  <script>
+  (function () {
+    if (window.__mobileMenuBound) return;
+    window.__mobileMenuBound = true;
+
+    function getEls() {
+      return {
+        trigger: document.getElementById('mobile-menu-trigger'),
+        panel: document.getElementById('mobile-menu-panel'),
+      };
+    }
+
+    function open() {
+      var els = getEls();
+      if (!els.trigger || !els.panel) return;
+      els.panel.removeAttribute('hidden');
+      // Two RAFs so the browser commits the unhidden state before
+      // applying the data-open transition. Single RAF flickers in Safari.
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          els.panel.setAttribute('data-open', '');
+        });
+      });
+      els.trigger.setAttribute('aria-expanded', 'true');
+      els.trigger.setAttribute('aria-label', 'Close menu');
+    }
+
+    function close() {
+      var els = getEls();
+      if (!els.trigger || !els.panel) return;
+      els.panel.removeAttribute('data-open');
+      els.trigger.setAttribute('aria-expanded', 'false');
+      els.trigger.setAttribute('aria-label', 'Open menu');
+      // Wait for the panel transition (220ms) before [hidden] so the
+      // outgoing animation actually plays.
+      window.setTimeout(function () {
+        if (els.panel.getAttribute('aria-expanded') !== 'true') {
+          els.panel.setAttribute('hidden', '');
+        }
+      }, 240);
+    }
+
+    function isOpen() {
+      var t = document.getElementById('mobile-menu-trigger');
+      return !!(t && t.getAttribute('aria-expanded') === 'true');
+    }
+
+    document.addEventListener('click', function (e) {
+      var t = e.target;
+      if (!(t instanceof Element)) return;
+
+      // Trigger toggles the panel.
+      if (t.closest('#mobile-menu-trigger')) {
+        if (isOpen()) close();
+        else open();
+        return;
+      }
+
+      // A link inside the panel: let the navigation happen, then close.
+      // (View transitions will continue to render the panel briefly,
+      //  but `astro:before-swap` below handles the cross-page case.)
+      if (t.closest('#mobile-menu-panel a')) {
+        close();
+        return;
+      }
+
+      // Click anywhere outside the panel while it's open: close.
+      if (isOpen() && !t.closest('#mobile-menu-panel')) {
+        close();
+      }
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && isOpen()) close();
+    });
+
+    // Close on view-transition navigation so the next page renders clean.
+    document.addEventListener('astro:before-swap', function () {
+      if (isOpen()) close();
+    });
+
+    // Close if the viewport grows past `sm` while the panel is open.
+    var mq = window.matchMedia('(min-width: 640px)');
+    var handleMq = function (e) {
+      if (e.matches && isOpen()) close();
+    };
+    if (mq.addEventListener) mq.addEventListener('change', handleMq);
+    else if (mq.addListener) mq.addListener(handleMq);
+  })();
+</script> <div class="hidden mx-1.5 h-4 w-px bg-border-strong/70 sm:block" aria-hidden="true"></div> <button type="button" id="search-trigger" aria-label="Open search" class="group inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-bg-raised text-fg-muted transition-colors hover:border-accent/50 hover:bg-bg hover:text-fg sm:h-9 sm:w-auto sm:gap-2.5 sm:justify-start sm:rounded-lg sm:pl-3 sm:pr-3.5 sm:text-[0.875rem]"> <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <circle cx="11" cy="11" r="7"></circle> <path d="m20 20-3.5-3.5"></path> </svg> <span class="hidden sm:inline">Search</span> </button> <dialog id="search-dialog" aria-label="Search posts" class="search-dialog"> <div class="search-header"> <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="search-header__icon"> <circle cx="11" cy="11" r="7"></circle> <path d="m20 20-3.5-3.5"></path> </svg> <input id="search-input" type="text" placeholder="Search…" autocomplete="off" spellcheck="false" aria-label="Search query" class="search-header__input"> </div> <div id="search-results" class="search-results" aria-live="polite"></div> </dialog>  <script type="module">let n=null,d=!1;async function g(){if(!(n||d)){d=!0;try{n=await new Function("url","return import(/* @vite-ignore */ url)")("/pagefind/pagefind.js"),n&&typeof n.init=="function"&&await n.init()}catch(e){console.warn("[search] pagefind index unavailable",e);const t=document.getElementById("search-results");t&&(t.innerHTML=`<div class="search-empty">Search isn't loaded right now. Browse the <a href="/posts">all posts</a> page instead.</div>`)}finally{d=!1}}}function u(e){return(e||"").replace(/[&<>"']/g,t=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[t])}function p(){const e=document.getElementById("search-dialog"),t=document.getElementById("search-trigger"),o=document.getElementById("search-input"),s=document.getElementById("search-results");if(!e||!t||!o||!s||t.__bound)return;t.__bound=!0;const c='<div class="search-empty">Type to search posts.</div>';s.innerHTML=c;const h=()=>{e.open||(e.showModal(),o.value="",s.innerHTML=c,o.focus(),g())},m=()=>{e.open&&e.close()};t.addEventListener("click",h),e.addEventListener("click",r=>{if(!e.open)return;const a=e.getBoundingClientRect();(r.clientY<a.top||r.clientY>a.bottom||r.clientX<a.left||r.clientX>a.right)&&m()});let f;o.addEventListener("input",()=>{clearTimeout(f);const r=o.value.trim();if(!r){s.innerHTML=c;return}f=window.setTimeout(async()=>{if(n||await g(),!n||typeof n.search!="function")return;const a=await n.search(r),l=await Promise.all(a.results.slice(0,8).map(i=>i.data()));if(l.length===0){s.innerHTML='<div class="search-empty">No matches for <strong style="color: rgb(var(--fg)); font-weight: 500">'+u(r)+"</strong>.</div>";return}s.innerHTML=l.map(i=>`
+            <a href="${u(i.url)}">
+              <div class="search-results__title">${u(i.meta?.title||i.url)}</div>
+              ${i.excerpt?`<div class="search-results__excerpt">${i.excerpt}</div>`:""}
+            </a>`).join("")},120)})}function y(){window.__searchShortcut||(window.__searchShortcut=!0,document.addEventListener("keydown",e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();const t=document.getElementById("search-dialog");if(!t)return;t.open?t.close():document.getElementById("search-trigger")?.click()}}))}p();y();document.addEventListener("astro:page-load",p);</script> <div class="hidden mx-1.5 h-4 w-px bg-border-strong/70 sm:block" aria-hidden="true"></div> <button type="button" id="theme-toggle" aria-label="Toggle color theme" class="group inline-flex h-8 w-8 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-bg-raised hover:text-fg"> <svg xmlns="http://www.w3.org/2000/svg" class="h-[15px] w-[15px] transition-transform duration-500 group-hover:rotate-45 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2"></path> <path d="M12 20v2"></path> <path d="m4.93 4.93 1.41 1.41"></path> <path d="m17.66 17.66 1.41 1.41"></path> <path d="M2 12h2"></path> <path d="M20 12h2"></path> <path d="m6.34 17.66-1.41 1.41"></path> <path d="m19.07 4.93-1.41 1.41"></path> </svg> <svg xmlns="http://www.w3.org/2000/svg" class="hidden h-[15px] w-[15px] transition-transform duration-500 group-hover:-rotate-12 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path> </svg> </button> <script>
+  (function () {
+    if (window.__themeToggleBound) return;
+    window.__themeToggleBound = true;
+    document.addEventListener('click', function (e) {
+      var target = e.target;
+      if (!(target instanceof Element)) return;
+      var btn = target.closest('#theme-toggle');
+      if (!btn) return;
+      var html = document.documentElement;
+      html.classList.add('theme-transition');
+      var current = html.getAttribute('data-theme');
+      var next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      try {
+        localStorage.setItem('theme', next);
+      } catch (err) {}
+      window.setTimeout(function () {
+        html.classList.remove('theme-transition');
+      }, 320);
+    });
+  })();
+</script> </div> </div> </header> <main id="main" class="relative mx-auto w-full max-w-content flex-1 px-screen-px pb-16">  <article class="mx-auto max-w-prose reveal"> <header class="mb-12 flex flex-col gap-5 sm:mb-16"> <div class="flex flex-wrap items-center gap-x-3 gap-y-1"> <time datetime="2026-05-12" class="meta"> May 12, 2026 </time> <span class="meta text-fg-subtle" aria-hidden="true">·</span> <span class="meta">12 min read</span>   </div> <h1 class="text-display-lg font-semibold tracking-tight text-fg"> Trailing-month tabs in PnP Modern Search that don&#39;t need a monthly redeploy </h1> <p class="text-lg leading-relaxed text-fg-muted"> A single Handlebars template generates a self-advancing twelve-month tab strip. No rebuilds, no SPFx helpers, no JavaScript. </p> <a href="https://github.com/charlievogt/pnp-search-templates" target="_blank" rel="noopener noreferrer" aria-label="Open charlievogt/pnp-search-templates on GitHub" data-astro-cid-4y6e65ve="true" class="repo-badge"> <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true" class="repo-badge__icon" data-astro-cid-4y6e65ve> <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z" data-astro-cid-4y6e65ve></path> </svg> <span class="repo-badge__text" data-astro-cid-4y6e65ve>charlievogt/pnp-search-templates</span> </a>  <div class="border-t border-border/70 pt-5"> <ul class="flex flex-wrap gap-1.5"><li><a href="/tags/spfx" class="chip">SPFx</a></li><li><a href="/tags/microsoft365" class="chip">Microsoft365</a></li><li><a href="/tags/pnpmodernsearch" class="chip">PnPModernSearch</a></li></ul> </div> </header> <div class="prose prose-lg max-w-none">  <p>A SharePoint Online site I worked on had a “New Employee Bios” page with a tab strip that looked like this:</p>
+<p><code>Jun 2025 | Jul 2025 | Aug 2025 | … | Apr 2026 | May 2026</code></p>
+<p>The tabs web part was the kind where each tab is just static content. Every month, someone in HR had to remember to edit the page. Type in the new bios. Add a new tab. Retire the oldest. Republish.</p>
+<p>Modernizing meant moving the bios out of the page and into a SharePoint list with a hire date, then surfacing them through PnP Modern Search. That solves the data side. Bios become rows instead of paragraphs of page text. But the tab strip is still wide open. The naive rebuild is twelve Search Results web parts, one per month, each KQL-filtered to that month’s new hires. Twelve copies of the same web part, twelve tabs, twelve manual edits a year. The monthly ritual just moves from typing bios to editing KQL.</p>
+<p>I wanted one web part. One template. Tabs that re-render themselves.</p>
+<style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var a=(s,i,o)=>{let r=async()=>{await(await s())()},t=typeof i.value=="object"?i.value:void 0,c={rootMargin:t==null?void 0:t.rootMargin},n=new IntersectionObserver(e=>{for(let l of e)if(l.isIntersecting){n.disconnect(),r();break}},c);for(let e of o.children)n.observe(e)};(self.Astro||(self.Astro={})).visible=a;window.dispatchEvent(new Event("astro:visible"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&&(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&&this.lastChild.nodeValue==="astro:end"&&(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&&await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="ZtsjhG" prefix="r1" component-url="/_astro/MonthTabsScrubber.DVBJZ2Wl.js" component-export="MonthTabsScrubber" renderer-url="/_astro/client.Blbc647A.js" props="{}" ssr client="visible" opts="{&quot;name&quot;:&quot;MonthTabsScrubber&quot;,&quot;value&quot;:true}" await-children><figure role="figure" aria-label="Trailing 12-month tab strip computed from today. 2025: Jun, Jul, Aug, Sep, Oct, Nov, Dec then 2026: Jan, Feb, Mar, Apr, May. Active month: 2026-05." style="margin:1.5rem 0;padding:1.25rem 1.5rem;background:rgb(var(--bg-raised));border:1px solid rgb(var(--border));border-radius:0.625rem;overflow-x:auto"><div style="display:inline-flex;align-items:stretch;padding:4px 6px;gap:6px;background:rgb(var(--bg));border:1px solid rgb(var(--border));border-radius:8px"><div style="display:flex;flex-direction:column;padding:2px 4px 0;gap:2px"><div style="font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:rgb(var(--fg-subtle));padding-left:8px;margin-bottom:2px;user-select:none">2025</div><div style="display:flex;gap:2px"><button type="button" aria-pressed="false" style="padding:5px 11px;font-size:13px;line-height:1;color:rgb(var(--fg-muted));background:transparent;border:0;border-radius:5px;cursor:pointer;white-space:nowrap;font-weight:400;box-shadow:none;transition:color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease">Jun</button><button type="button" aria-pressed="false" style="padding:5px 11px;font-size:13px;line-height:1;color:rgb(var(--fg-muted));background:transparent;border:0;border-radius:5px;cursor:pointer;white-space:nowrap;font-weight:400;box-shadow:none;transition:color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease">Jul</button><button type="button" aria-pressed="false" style="padding:5px 11px;font-size:13px;line-height:1;color:rgb(var(--fg-muted));background:transparent;border:0;border-radius:5px;cursor:pointer;white-space:nowrap;font-weight:400;box-shadow:none;transition:color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease">Aug</button><button type="button" aria-pressed="false" style="padding:5px 11px;font-size:13px;line-height:1;color:rgb(var(--fg-muted));background:transparent;border:0;border-radius:5px;cursor:pointer;white-space:nowrap;font-weight:400;box-shadow:none;transition:color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease">Sep</button><button type="button" aria-pressed="false" style="padding:5px 11px;font-size:13px;line-height:1;color:rgb(var(--fg-muted));background:transparent;border:0;border-radius:5px;cursor:pointer;white-space:nowrap;font-weight:400;box-shadow:none;transition:color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease">Oct</button><button type="button" aria-pressed="false" style="padding:5px 11px;font-size:13px;line-height:1;color:rgb(var(--fg-muted));background:transparent;border:0;border-radius:5px;cursor:pointer;white-space:nowrap;font-weight:400;box-shadow:none;transition:color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease">Nov</button><button type="button" aria-pressed="false" style="padding:5px 11px;font-size:13px;line-height:1;color:rgb(var(--fg-muted));background:transparent;border:0;border-radius:5px;cursor:pointer;white-space:nowrap;font-weight:400;box-shadow:none;transition:color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease">Dec</button></div></div><div style="width:1px;align-self:stretch;margin:4px 0;background:rgb(var(--border))"></div><div style="display:flex;flex-direction:column;padding:2px 4px 0;gap:2px"><div style="font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:rgb(var(--fg-subtle));padding-left:8px;margin-bottom:2px;user-select:none">2026</div><div style="display:flex;gap:2px"><button type="button" aria-pressed="false" style="padding:5px 11px;font-size:13px;line-height:1;color:rgb(var(--fg-muted));background:transparent;border:0;border-radius:5px;cursor:pointer;white-space:nowrap;font-weight:400;box-shadow:none;transition:color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease">Jan</button><button type="button" aria-pressed="false" style="padding:5px 11px;font-size:13px;line-height:1;color:rgb(var(--fg-muted));background:transparent;border:0;border-radius:5px;cursor:pointer;white-space:nowrap;font-weight:400;box-shadow:none;transition:color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease">Feb</button><button type="button" aria-pressed="false" style="padding:5px 11px;font-size:13px;line-height:1;color:rgb(var(--fg-muted));background:transparent;border:0;border-radius:5px;cursor:pointer;white-space:nowrap;font-weight:400;box-shadow:none;transition:color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease">Mar</button><button type="button" aria-pressed="false" style="padding:5px 11px;font-size:13px;line-height:1;color:rgb(var(--fg-muted));background:transparent;border:0;border-radius:5px;cursor:pointer;white-space:nowrap;font-weight:400;box-shadow:none;transition:color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease">Apr</button><button type="button" aria-pressed="true" style="padding:5px 11px;font-size:13px;line-height:1;color:rgb(var(--accent));background:rgb(var(--bg-raised));border:0;border-radius:5px;cursor:pointer;white-space:nowrap;font-weight:600;box-shadow:0 1px 2px rgb(var(--fg) / 0.10), 0 0 0 1px rgb(var(--border));transition:color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease">May</button></div></div></div></figure><!--astro:end--></astro-island>
+<p>That strip is computed live from the date you load this page on. Refresh it next month and you’ll get a different range. The real Handlebars template that ships in production does the same thing, just at SharePoint render time instead of in React.</p>
+<p>Here’s the trick.</p>
+<p>The web part has a built-in template language, and templates can compute things at render time, including dates relative to today. So instead of hard-coding tab labels for twelve months, the template asks the browser what today’s date is and works back from there. Open it in May, get May back to last June. Open it in June, get June back to last July. The page rewrites itself every visit.</p>
+<h2 id="the-recipe"><a href="#the-recipe" class="heading-link">The recipe</a><a href="#the-recipe" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>PnP Modern Search’s Search Results web part runs templates through <a href="https://handlebarsjs.com/">Handlebars</a>, a small template language with helpers for common operations. The two this template uses are <code>JSONparse</code> (turns a string of JSON into an array the template can loop over) and <code>moment</code> (does date math). That’s all you need.</p>
+<div class="expressive-code"><link rel="stylesheet" href="/_astro/ec.f7bzk.css"/><script type="module" src="/_astro/ec.8zarh.js"></script><figure class="frame"><figcaption class="header"></figcaption><pre data-language="handlebars" class="wrap" style="--ecMaxLine:186ch"><code><div class="ec-line"><div class="code"><span style="--0:#79B8FF;--1:#005CC5">{{</span><span style="--0:#F97583;--1:#BF3441">#with</span><span style="--0:#E1E4E8;--1:#24292E"> (</span><span style="--0:#FFAB70;--1:#AE4B07">JSONparse</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#9ECBFF;--1:#032F62">&quot;[</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">0 month</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">,</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">1 month</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">,</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">2 month</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">,</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">3 month</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">,</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">4 month</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">,</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">5 month</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">,</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">6 month</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">,</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">7 month</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">,</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">8 month</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">,</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">9 month</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">,</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">10 month</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">,</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">11 month</span><span style="--0:#79B8FF;--1:#005CC5">\&quot;</span><span style="--0:#9ECBFF;--1:#032F62">]&quot;</span><span style="--0:#E1E4E8;--1:#24292E">) </span><span style="--0:#FFAB70;--1:#AE4B07">as</span><span style="--0:#E1E4E8;--1:#24292E"> |</span><span style="--0:#FFAB70;--1:#AE4B07">durations</span><span style="--0:#E1E4E8;--1:#24292E">|</span><span style="--0:#79B8FF;--1:#005CC5">}}</span></div></div><div class="ec-line" style="--ecIndent:2ch"><div class="code"><span class="indent">  </span><span style="--0:#79B8FF;--1:#005CC5">{{</span><span style="--0:#F97583;--1:#BF3441">#each</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#FFAB70;--1:#AE4B07">durations</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#79B8FF;--1:#005CC5">as</span><span style="--0:#E1E4E8;--1:#24292E"> |</span><span style="--0:#FFAB70;--1:#AE4B07">dur</span><span style="--0:#E1E4E8;--1:#24292E">|</span><span style="--0:#79B8FF;--1:#005CC5">}}</span></div></div><div class="ec-line" style="--ecIndent:4ch"><div class="code"><span class="indent"><span style="--0:#E1E4E8;--1:#24292E">    </span></span><span style="--0:#E1E4E8;--1:#24292E">&lt;</span><span style="--0:#85E89D;--1:#1E7734">input</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#B392F0;--1:#6F42C1">type=</span><span style="--0:#9ECBFF;--1:#032F62">&quot;radio&quot;</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#B392F0;--1:#6F42C1">name=</span><span style="--0:#9ECBFF;--1:#032F62">&quot;bio-tab&quot;</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#B392F0;--1:#6F42C1">id</span><span style="--0:#E1E4E8;--1:#24292E">=</span><span style="--0:#9ECBFF;--1:#032F62">&quot;bio-tab-</span><span style="--0:#79B8FF;--1:#005CC5">{{getDate</span><span style="--0:#9ECBFF;--1:#032F62"> (</span><span style="--0:#79B8FF;--1:#005CC5">moment</span><span style="--0:#9ECBFF;--1:#032F62"> (</span><span style="--0:#79B8FF;--1:#005CC5">moment</span><span style="--0:#9ECBFF;--1:#032F62">) </span><span style="--0:#79B8FF;--1:#005CC5">subtract</span><span style="--0:#B392F0;--1:#6F42C1">=</span><span style="--0:#79B8FF;--1:#005CC5">dur</span><span style="--0:#9ECBFF;--1:#032F62">) &#39;YYYY-MM&#39;</span><span style="--0:#79B8FF;--1:#005CC5">}}</span><span style="--0:#9ECBFF;--1:#032F62">&quot;</span><span style="--0:#E1E4E8;--1:#24292E">&gt;</span></div></div><div class="ec-line" style="--ecIndent:2ch"><div class="code"><span class="indent">  </span><span style="--0:#79B8FF;--1:#005CC5">{{</span><span style="--0:#F97583;--1:#BF3441">/each</span><span style="--0:#79B8FF;--1:#005CC5">}}</span></div></div><div class="ec-line"><div class="code"><span style="--0:#79B8FF;--1:#005CC5">{{</span><span style="--0:#F97583;--1:#BF3441">/with</span><span style="--0:#79B8FF;--1:#005CC5">}}</span></div></div></code></pre><div class="copy"><button title="Copy to clipboard" data-copied="Copied!" data-code="{{#with (JSONparse &#34;[\&#34;0 month\&#34;,\&#34;1 month\&#34;,\&#34;2 month\&#34;,\&#34;3 month\&#34;,\&#34;4 month\&#34;,\&#34;5 month\&#34;,\&#34;6 month\&#34;,\&#34;7 month\&#34;,\&#34;8 month\&#34;,\&#34;9 month\&#34;,\&#34;10 month\&#34;,\&#34;11 month\&#34;]&#34;) as |durations|}}  {{#each durations as |dur|}}    <input type=&#34;radio&#34; name=&#34;bio-tab&#34; id=&#34;bio-tab-{{getDate (moment (moment) subtract=dur) 'YYYY-MM'}}&#34;>  {{/each}}{{/with}}"><div></div></button></div></figure></div>
+<p><code>JSONparse</code> turns a literal string into a Handlebars-iterable array. Iterating it gives the template twelve passes, one per duration. Inside each pass, the date math chain:</p>
+<div class="expressive-code"><figure class="frame"><figcaption class="header"></figcaption><pre data-language="handlebars" class="wrap" style="--ecMaxLine:52ch"><code><div class="ec-line"><div class="code"><span style="--0:#79B8FF;--1:#005CC5">{{</span><span style="--0:#FFAB70;--1:#AE4B07">getDate</span><span style="--0:#E1E4E8;--1:#24292E"> (</span><span style="--0:#FFAB70;--1:#AE4B07">moment</span><span style="--0:#E1E4E8;--1:#24292E"> (</span><span style="--0:#FFAB70;--1:#AE4B07">moment</span><span style="--0:#E1E4E8;--1:#24292E">) </span><span style="--0:#FFAB70;--1:#AE4B07">subtract</span><span style="--0:#B392F0;--1:#6F42C1">=</span><span style="--0:#FFAB70;--1:#AE4B07">dur</span><span style="--0:#E1E4E8;--1:#24292E">) </span><span style="--0:#9ECBFF;--1:#032F62">&#39;YYYY-MM&#39;</span><span style="--0:#79B8FF;--1:#005CC5">}}</span></div></div></code></pre><div class="copy"><button title="Copy to clipboard" data-copied="Copied!" data-code="{{getDate (moment (moment) subtract=dur) 'YYYY-MM'}}"><div></div></button></div></figure></div>
+<p>The inner <code>(moment)</code> returns today as a date string. The middle <code>(moment STRING subtract=dur)</code> subtracts the duration. The outer <code>getDate</code> formats the result as <code>YYYY-MM</code>. Twelve iterations, twelve unique radio IDs, one per trailing month, and the values are all relative to the moment the page renders. Browsers go to bed today and wake up with a new tab strip tomorrow on the 1st of next month.</p>
+<p>The same loop runs again for the labels. And once more inside the <code>&lt;style&gt;</code> block to generate the per-month CSS visibility rules:</p>
+<div class="expressive-code"><figure class="frame"><figcaption class="header"></figcaption><pre data-language="handlebars" class="wrap" style="--ecMaxLine:184ch"><code><div class="ec-line"><div class="code"><span style="--0:#E1E4E8;--1:#24292E">#bio-tab-</span><span style="--0:#79B8FF;--1:#005CC5">{{</span><span style="--0:#FFAB70;--1:#AE4B07">getDate</span><span style="--0:#E1E4E8;--1:#24292E"> (</span><span style="--0:#FFAB70;--1:#AE4B07">moment</span><span style="--0:#E1E4E8;--1:#24292E"> (</span><span style="--0:#FFAB70;--1:#AE4B07">moment</span><span style="--0:#E1E4E8;--1:#24292E">) </span><span style="--0:#FFAB70;--1:#AE4B07">subtract</span><span style="--0:#B392F0;--1:#6F42C1">=</span><span style="--0:#FFAB70;--1:#AE4B07">dur</span><span style="--0:#E1E4E8;--1:#24292E">) </span><span style="--0:#9ECBFF;--1:#032F62">&#39;YYYY-MM&#39;</span><span style="--0:#79B8FF;--1:#005CC5">}}</span><span style="--0:#E1E4E8;--1:#24292E">:checked ~ .bio-grid &gt; .bio-card[data-month-key=&quot;</span><span style="--0:#79B8FF;--1:#005CC5">{{</span><span style="--0:#FFAB70;--1:#AE4B07">getDate</span><span style="--0:#E1E4E8;--1:#24292E"> (</span><span style="--0:#FFAB70;--1:#AE4B07">moment</span><span style="--0:#E1E4E8;--1:#24292E"> (</span><span style="--0:#FFAB70;--1:#AE4B07">moment</span><span style="--0:#E1E4E8;--1:#24292E">) </span><span style="--0:#FFAB70;--1:#AE4B07">subtract</span><span style="--0:#B392F0;--1:#6F42C1">=</span><span style="--0:#FFAB70;--1:#AE4B07">dur</span><span style="--0:#E1E4E8;--1:#24292E">) </span><span style="--0:#9ECBFF;--1:#032F62">&#39;YYYY-MM&#39;</span><span style="--0:#79B8FF;--1:#005CC5">}}</span><span style="--0:#E1E4E8;--1:#24292E">&quot;] { display: block; }</span></div></div></code></pre><div class="copy"><button title="Copy to clipboard" data-copied="Copied!" data-code="#bio-tab-{{getDate (moment (moment) subtract=dur) 'YYYY-MM'}}:checked ~ .bio-grid > .bio-card[data-month-key=&#34;{{getDate (moment (moment) subtract=dur) 'YYYY-MM'}}&#34;] { display: block; }"><div></div></button></div></figure></div>
+<p>Each card carries <code>data-month-key=&quot;2026-04&quot;</code> (or whichever month its <code>EffectiveDate</code> falls in), and the matching <code>:checked ~</code> sibling rule shows it. Tab switching is pure CSS via hidden radios. No JavaScript, no event listeners. The browser does the work.</p>
+<p><img src="/blog/pnp-grouped-tabs-coming-soon.png" alt="Top section: Coming Soon tab active with teal underline; Promotions &#38; Transfers and Departing Employees tabs inactive. Table of six upcoming hires: Priya Anand, Marcus Bell, Sofia Castellanos, Ravi Dasgupta, Iris Fontaine, Owen Hartwell."/></p>
+<p>Above the bios I added a second Results web part with the same template idea but three fixed tabs: <strong>Coming Soon</strong> (future-dated entries), <strong>Promotions &amp; Transfers</strong> and <strong>Departing Employees</strong> (both within a ±45-day window of today). Same recipe, different durations. The date windows are evaluated against <code>today</code> at render time, so they slide forward without any redeploys either.</p>
+<p>While the bios web part is wired to a connected Search Box, the top one isn’t. Typing a name into the search box hides the month tab strip and surfaces every matching card across all twelve months at once via a <code>[data-search*=&quot;query&quot; i]</code> attribute selector. Pure CSS again.</p>
+<p><img src="/blog/pnp-grouped-tabs-search.png" alt="Bios container in search mode. Tab strip is hidden. A single bio card is visible for Hassan Khouri, Support Engineer, Chicago - Loop, Start Date 3/24/2026."/></p>
+<h2 id="a-grouped-variant"><a href="#a-grouped-variant" class="heading-link">A grouped variant</a><a href="#a-grouped-variant" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>The flat 12-month strip works, but it gets long. Twelve labels in a row crowds the page and the year ambiguity (was that <code>Jun</code> last year or this year?) only resolves if every label carries <code>MMM YYYY</code> text. A nicer alternative: split the strip into two year columns, each labelled with its year, each holding the months that belong to it. Six months under <code>2025</code>, six under <code>2026</code>. When the calendar rolls over, the split slides one month to the right.</p>
+<p><img src="/blog/pnp-grouped-tabs-may.png" alt="Grouped trailing-12-months tab strip with year columns labelled 2025 (Jun-Dec) and 2026 (Jan-May, May active with white pill). Two cards below for Bryce Coleman (Recruiter, Seattle - HQ) and Amelia Park (Frontend Engineer, Remote)."/></p>
+<p>Same template machinery. Each year column iterates the same twelve-duration list but only renders months whose <code>YYYY</code> matches that column. The previous-year column auto-hides via <code>:empty</code> on the one month a year when the trailing window happens to land entirely in the current year:</p>
+<div class="expressive-code"><figure class="frame"><figcaption class="header"></figcaption><pre data-language="handlebars" class="wrap" style="--ecMaxLine:104ch"><code><div class="ec-line"><div class="code"><span style="--0:#E1E4E8;--1:#24292E">&lt;</span><span style="--0:#85E89D;--1:#1E7734">div</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#B392F0;--1:#6F42C1">class=</span><span style="--0:#9ECBFF;--1:#032F62">&quot;bio-tab-year&quot;</span><span style="--0:#E1E4E8;--1:#24292E">&gt;</span></div></div><div class="ec-line" style="--ecIndent:2ch"><div class="code"><span class="indent"><span style="--0:#E1E4E8;--1:#24292E">  </span></span><span style="--0:#E1E4E8;--1:#24292E">&lt;</span><span style="--0:#85E89D;--1:#1E7734">div</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#B392F0;--1:#6F42C1">class=</span><span style="--0:#9ECBFF;--1:#032F62">&quot;bio-tab-year-label&quot;</span><span style="--0:#E1E4E8;--1:#24292E">&gt;</span><span style="--0:#79B8FF;--1:#005CC5">{{</span><span style="--0:#FFAB70;--1:#AE4B07">getDate</span><span style="--0:#E1E4E8;--1:#24292E"> (</span><span style="--0:#FFAB70;--1:#AE4B07">moment</span><span style="--0:#E1E4E8;--1:#24292E"> (</span><span style="--0:#FFAB70;--1:#AE4B07">moment</span><span style="--0:#E1E4E8;--1:#24292E">) </span><span style="--0:#FFAB70;--1:#AE4B07">subtract</span><span style="--0:#B392F0;--1:#6F42C1">=</span><span style="--0:#9ECBFF;--1:#032F62">&#39;1 year&#39;</span><span style="--0:#E1E4E8;--1:#24292E">) </span><span style="--0:#9ECBFF;--1:#032F62">&#39;YYYY&#39;</span><span style="--0:#79B8FF;--1:#005CC5">}}</span><span style="--0:#E1E4E8;--1:#24292E">&lt;/</span><span style="--0:#85E89D;--1:#1E7734">div</span><span style="--0:#E1E4E8;--1:#24292E">&gt;</span></div></div><div class="ec-line" style="--ecIndent:2ch"><div class="code"><span class="indent"><span style="--0:#E1E4E8;--1:#24292E">  </span></span><span style="--0:#E1E4E8;--1:#24292E">&lt;</span><span style="--0:#85E89D;--1:#1E7734">div</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#B392F0;--1:#6F42C1">class=</span><span style="--0:#9ECBFF;--1:#032F62">&quot;bio-tab-months&quot;</span><span style="--0:#E1E4E8;--1:#24292E">&gt;</span></div></div><div class="ec-line" style="--ecIndent:4ch"><div class="code"><span class="indent">    </span><span style="--0:#79B8FF;--1:#005CC5">{{</span><span style="--0:#F97583;--1:#BF3441">#each</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#FFAB70;--1:#AE4B07">durations</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#79B8FF;--1:#005CC5">as</span><span style="--0:#E1E4E8;--1:#24292E"> |</span><span style="--0:#FFAB70;--1:#AE4B07">dur</span><span style="--0:#E1E4E8;--1:#24292E">|</span><span style="--0:#79B8FF;--1:#005CC5">}}</span></div></div><div class="ec-line" style="--ecIndent:6ch"><div class="code"><span class="indent">      </span><span style="--0:#79B8FF;--1:#005CC5">{{</span><span style="--0:#F97583;--1:#BF3441">#if</span><span style="--0:#E1E4E8;--1:#24292E"> (</span><span style="--0:#FFAB70;--1:#AE4B07">eq</span><span style="--0:#E1E4E8;--1:#24292E"> (</span><span style="--0:#FFAB70;--1:#AE4B07">getDate</span><span style="--0:#E1E4E8;--1:#24292E"> (</span><span style="--0:#FFAB70;--1:#AE4B07">moment</span><span style="--0:#E1E4E8;--1:#24292E"> (</span><span style="--0:#FFAB70;--1:#AE4B07">moment</span><span style="--0:#E1E4E8;--1:#24292E">) </span><span style="--0:#FFAB70;--1:#AE4B07">subtract</span><span style="--0:#B392F0;--1:#6F42C1">=</span><span style="--0:#FFAB70;--1:#AE4B07">dur</span><span style="--0:#E1E4E8;--1:#24292E">) </span><span style="--0:#9ECBFF;--1:#032F62">&#39;YYYY&#39;</span><span style="--0:#E1E4E8;--1:#24292E">)</span></div></div><div class="ec-line" style="--ecIndent:16ch"><div class="code"><span class="indent"><span style="--0:#E1E4E8;--1:#24292E">                </span></span><span style="--0:#E1E4E8;--1:#24292E">(</span><span style="--0:#FFAB70;--1:#AE4B07">getDate</span><span style="--0:#E1E4E8;--1:#24292E"> (</span><span style="--0:#FFAB70;--1:#AE4B07">moment</span><span style="--0:#E1E4E8;--1:#24292E"> (</span><span style="--0:#FFAB70;--1:#AE4B07">moment</span><span style="--0:#E1E4E8;--1:#24292E">) </span><span style="--0:#FFAB70;--1:#AE4B07">subtract</span><span style="--0:#B392F0;--1:#6F42C1">=</span><span style="--0:#9ECBFF;--1:#032F62">&#39;1 year&#39;</span><span style="--0:#E1E4E8;--1:#24292E">) </span><span style="--0:#9ECBFF;--1:#032F62">&#39;YYYY&#39;</span><span style="--0:#E1E4E8;--1:#24292E">))</span><span style="--0:#79B8FF;--1:#005CC5">}}</span></div></div><div class="ec-line" style="--ecIndent:8ch"><div class="code"><span class="indent"><span style="--0:#E1E4E8;--1:#24292E">        </span></span><span style="--0:#E1E4E8;--1:#24292E">&lt;</span><span style="--0:#85E89D;--1:#1E7734">label</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#B392F0;--1:#6F42C1">class=</span><span style="--0:#9ECBFF;--1:#032F62">&quot;bio-tab-label&quot;</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#B392F0;--1:#6F42C1">for=</span><span style="--0:#9ECBFF;--1:#032F62">&quot;bio-tab-</span><span style="--0:#79B8FF;--1:#005CC5">{{getDate</span><span style="--0:#9ECBFF;--1:#032F62"> (</span><span style="--0:#79B8FF;--1:#005CC5">moment</span><span style="--0:#9ECBFF;--1:#032F62"> (</span><span style="--0:#79B8FF;--1:#005CC5">moment</span><span style="--0:#9ECBFF;--1:#032F62">) </span><span style="--0:#79B8FF;--1:#005CC5">subtract</span><span style="--0:#B392F0;--1:#6F42C1">=</span><span style="--0:#79B8FF;--1:#005CC5">dur</span><span style="--0:#9ECBFF;--1:#032F62">) &#39;YYYY-MM&#39;</span><span style="--0:#79B8FF;--1:#005CC5">}}</span><span style="--0:#9ECBFF;--1:#032F62">&quot;</span><span style="--0:#E1E4E8;--1:#24292E">&gt;</span></div></div><div class="ec-line" style="--ecIndent:10ch"><div class="code"><span class="indent">          </span><span style="--0:#79B8FF;--1:#005CC5">{{</span><span style="--0:#FFAB70;--1:#AE4B07">getDate</span><span style="--0:#E1E4E8;--1:#24292E"> (</span><span style="--0:#FFAB70;--1:#AE4B07">moment</span><span style="--0:#E1E4E8;--1:#24292E"> (</span><span style="--0:#FFAB70;--1:#AE4B07">moment</span><span style="--0:#E1E4E8;--1:#24292E">) </span><span style="--0:#FFAB70;--1:#AE4B07">subtract</span><span style="--0:#B392F0;--1:#6F42C1">=</span><span style="--0:#FFAB70;--1:#AE4B07">dur</span><span style="--0:#E1E4E8;--1:#24292E">) </span><span style="--0:#9ECBFF;--1:#032F62">&#39;MMM&#39;</span><span style="--0:#79B8FF;--1:#005CC5">}}</span></div></div><div class="ec-line" style="--ecIndent:8ch"><div class="code"><span class="indent"><span style="--0:#E1E4E8;--1:#24292E">        </span></span><span style="--0:#E1E4E8;--1:#24292E">&lt;/</span><span style="--0:#85E89D;--1:#1E7734">label</span><span style="--0:#E1E4E8;--1:#24292E">&gt;</span></div></div><div class="ec-line" style="--ecIndent:6ch"><div class="code"><span class="indent">      </span><span style="--0:#79B8FF;--1:#005CC5">{{</span><span style="--0:#F97583;--1:#BF3441">/if</span><span style="--0:#79B8FF;--1:#005CC5">}}</span></div></div><div class="ec-line" style="--ecIndent:4ch"><div class="code"><span class="indent">    </span><span style="--0:#79B8FF;--1:#005CC5">{{</span><span style="--0:#F97583;--1:#BF3441">/each</span><span style="--0:#79B8FF;--1:#005CC5">}}</span></div></div><div class="ec-line" style="--ecIndent:2ch"><div class="code"><span class="indent"><span style="--0:#E1E4E8;--1:#24292E">  </span></span><span style="--0:#E1E4E8;--1:#24292E">&lt;/</span><span style="--0:#85E89D;--1:#1E7734">div</span><span style="--0:#E1E4E8;--1:#24292E">&gt;</span></div></div><div class="ec-line"><div class="code"><span style="--0:#E1E4E8;--1:#24292E">&lt;/</span><span style="--0:#85E89D;--1:#1E7734">div</span><span style="--0:#E1E4E8;--1:#24292E">&gt;</span></div></div></code></pre><div class="copy"><button title="Copy to clipboard" data-copied="Copied!" data-code="<div class=&#34;bio-tab-year&#34;>  <div class=&#34;bio-tab-year-label&#34;>{{getDate (moment (moment) subtract='1 year') 'YYYY'}}</div>  <div class=&#34;bio-tab-months&#34;>    {{#each durations as |dur|}}      {{#if (eq (getDate (moment (moment) subtract=dur) 'YYYY')                (getDate (moment (moment) subtract='1 year') 'YYYY'))}}        <label class=&#34;bio-tab-label&#34; for=&#34;bio-tab-{{getDate (moment (moment) subtract=dur) 'YYYY-MM'}}&#34;>          {{getDate (moment (moment) subtract=dur) 'MMM'}}        </label>      {{/if}}    {{/each}}  </div></div>"><div></div></button></div></figure></div>
+<p>The same loop renders again with the current year’s <code>YYYY</code> for the second column. No hardcoded years, no monthly edits.</p>
+<p>I also wanted a soft cross-fade when you switch tabs instead of cards snapping in and out. That part was harder than it should have been, and lands me in the next bug.</p>
+<h2 id="three-things-that-bit-me"><a href="#three-things-that-bit-me" class="heading-link">Three things that bit me</a><a href="#three-things-that-bit-me" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>The next three sections are debug stories. Skip them if you’re not building this yourself.</p>
+<h3 id="1-table-foster-parenting-eats-your-rows"><a href="#1-table-foster-parenting-eats-your-rows" class="heading-link">1. <code>&lt;table&gt;</code> foster-parenting eats your rows</a><a href="#1-table-foster-parenting-eats-your-rows" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>The first version of the top tab used a <code>&lt;table&gt;</code> with an <code>{{#each}}</code> loop inside <code>&lt;tbody&gt;</code>. The loop iterated over thirty-four items, my <code>{{#if}}</code> gated each row by EntryType and date window, and the DOM came out with the head row, one empty placeholder row, and… that was it. No data rows, no errors, no logs.</p>
+<p>The browser’s HTML parser has a special <a href="https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-intable">“in table”</a> insertion mode that <a href="https://html.spec.whatwg.org/multipage/parsing.html#foster-parenting">foster-parents</a> non-table content out of the <code>&lt;table&gt;</code> and into the document immediately before it. Pure whitespace is allowed by the spec, so an <code>{{#each}}</code> body that’s just indented text and <code>&lt;tr&gt;</code> elements should be safe, and yet mine wasn’t. The most likely real culprit is <a href="https://github.com/cure53/DOMPurify">DOMPurify</a>, which PnP runs over every rendered template before injecting it into the page; a re-parse pass turns one ambiguous string into a different DOM than the one Handlebars handed it, and <code>&lt;tr&gt;</code> elements outside their original <code>&lt;tbody&gt;</code> context end up getting foster-parented or dropped.</p>
+<p>I didn’t fully unwind the cause. The fix is to skip <code>&lt;table&gt;</code> entirely. Use a CSS grid <code>&lt;div&gt;</code> instead, with each row as its own grid container and shared <code>grid-template-columns</code> so the columns line up. Plain divs don’t put the parser into table mode, DOMPurify has no special rules for them, and the layout is identical:</p>
+<div class="expressive-code"><figure class="frame"><figcaption class="header"></figcaption><pre data-language="css" class="wrap" style="--ecMaxLine:49ch"><code><div class="ec-line"><div class="code"><span style="--0:#B392F0;--1:#6F42C1">.emp-row</span><span style="--0:#E1E4E8;--1:#24292E"> {</span></div></div><div class="ec-line" style="--ecIndent:2ch"><div class="code"><span class="indent">  </span><span style="--0:#79B8FF;--1:#005CC5">display</span><span style="--0:#E1E4E8;--1:#24292E">: </span><span style="--0:#79B8FF;--1:#005CC5">grid</span><span style="--0:#E1E4E8;--1:#24292E">;</span></div></div><div class="ec-line" style="--ecIndent:2ch"><div class="code"><span class="indent">  </span><span style="--0:#79B8FF;--1:#005CC5">grid-template-columns</span><span style="--0:#E1E4E8;--1:#24292E">: </span><span style="--0:#79B8FF;--1:#005CC5">1.6</span><span style="--0:#F97583;--1:#BF3441">fr</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#79B8FF;--1:#005CC5">2</span><span style="--0:#F97583;--1:#BF3441">fr</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#79B8FF;--1:#005CC5">1.4</span><span style="--0:#F97583;--1:#BF3441">fr</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#79B8FF;--1:#005CC5">1</span><span style="--0:#F97583;--1:#BF3441">fr</span><span style="--0:#E1E4E8;--1:#24292E">;</span></div></div><div class="ec-line" style="--ecIndent:2ch"><div class="code"><span class="indent">  </span><span style="--0:#79B8FF;--1:#005CC5">padding</span><span style="--0:#E1E4E8;--1:#24292E">: </span><span style="--0:#79B8FF;--1:#005CC5">10</span><span style="--0:#F97583;--1:#BF3441">px</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#79B8FF;--1:#005CC5">12</span><span style="--0:#F97583;--1:#BF3441">px</span><span style="--0:#E1E4E8;--1:#24292E">;</span></div></div><div class="ec-line" style="--ecIndent:2ch"><div class="code"><span class="indent">  </span><span style="--0:#79B8FF;--1:#005CC5">border-bottom</span><span style="--0:#E1E4E8;--1:#24292E">: </span><span style="--0:#79B8FF;--1:#005CC5">1</span><span style="--0:#F97583;--1:#BF3441">px</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#79B8FF;--1:#005CC5">solid</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#79B8FF;--1:#005CC5">var</span><span style="--0:#E1E4E8;--1:#24292E">(</span><span style="--0:#FFAB70;--1:#AE4B07">--neutralLighter</span><span style="--0:#E1E4E8;--1:#24292E">);</span></div></div><div class="ec-line"><div class="code"><span style="--0:#E1E4E8;--1:#24292E">}</span></div></div><div class="ec-line"><div class="code"><span style="--0:#B392F0;--1:#6F42C1">.emp-row--head</span><span style="--0:#E1E4E8;--1:#24292E"> { </span><span style="--0:#79B8FF;--1:#005CC5">font-weight</span><span style="--0:#E1E4E8;--1:#24292E">: </span><span style="--0:#79B8FF;--1:#005CC5">600</span><span style="--0:#E1E4E8;--1:#24292E">; }</span></div></div></code></pre><div class="copy"><button title="Copy to clipboard" data-copied="Copied!" data-code=".emp-row {  display: grid;  grid-template-columns: 1.6fr 2fr 1.4fr 1fr;  padding: 10px 12px;  border-bottom: 1px solid var(--neutralLighter);}.emp-row--head { font-weight: 600; }"><div></div></button></div></figure></div>
+<h3 id="2-the-search-box-wiring-path-has-a-tail-you-dont-want"><a href="#2-the-search-box-wiring-path-has-a-tail-you-dont-want" class="heading-link">2. The search box wiring path has a tail you don’t want</a><a href="#2-the-search-box-wiring-path-has-a-tail-you-dont-want" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>When you connect a Search Box web part to a Search Results web part programmatically, the canvas content stores a dynamic data path on the Results web part like this:</p>
+<p><code>WebPart.{searchBoxWpId}.{searchBoxInstanceId}:pnpSearchBoxWebPart:inputQueryText</code></p>
+<p>That trailing <code>:inputQueryText</code> is wrong. SPFx parses the colon-separated path as <code>&lt;webPart&gt;:&lt;propertyId&gt;:&lt;fieldName&gt;</code> and then walks <code>.fieldName</code> on whatever the propertyId resolves to. The search box’s <a href="https://github.com/microsoft-search/pnp-modern-search/blob/4.21.0/search-parts/src/webparts/searchBox/SearchBoxWebPart.ts#L427"><code>getPropertyValue</code></a> returns the raw query string, not an annotated object, so walking <code>.inputQueryText</code> on a string returns undefined, and the connected Results web part receives an empty query forever. The data source still fires on each keystroke. It just has nothing to filter on.</p>
+<p>The correct form is the bare <code>WebPart.{wpId}.{instanceId}:pnpSearchBoxWebPart</code>. I confirmed by inspecting the canvas content of a PnP-built People Directory page that works correctly. Same dynamic-data path, no trailing field. Drop the suffix and the connection lights up.</p>
+<aside class="callout callout--unsourced" role="note"> <div class="callout__head"> <span class="callout__icon" aria-hidden="true">?</span> <span class="callout__title">Unsourced</span> </div> <div class="callout__body"> <p>I couldn’t find official docs explaining how the trailing colon segment is supposed to resolve when the propertyId returns a primitive instead of an object. The fix is empirical: I observed the symptom, compared against a working page, patched the path, and confirmed the search filter started working. The mechanism above is my best guess from reading the SearchBox source.</p> </div> </aside> 
+<h3 id="3-pnps-css-scoper-silently-swallows-keyframes"><a href="#3-pnps-css-scoper-silently-swallows-keyframes" class="heading-link">3. PnP’s CSS scoper silently swallows <code>@keyframes</code></a><a href="#3-pnps-css-scoper-silently-swallows-keyframes" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>For the tab cross-fade I wrote what should be a normal CSS animation:</p>
+<div class="expressive-code"><figure class="frame"><figcaption class="header"></figcaption><pre data-language="css" class="wrap" style="--ecMaxLine:50ch"><code><div class="ec-line"><div class="code"><span style="--0:#F97583;--1:#BF3441">@keyframes</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#FFAB70;--1:#AE4B07">bio-card-in</span><span style="--0:#E1E4E8;--1:#24292E"> {</span></div></div><div class="ec-line" style="--ecIndent:2ch"><div class="code"><span class="indent">  </span><span style="--0:#B392F0;--1:#6F42C1">from</span><span style="--0:#E1E4E8;--1:#24292E"> { </span><span style="--0:#79B8FF;--1:#005CC5">opacity</span><span style="--0:#E1E4E8;--1:#24292E">: </span><span style="--0:#79B8FF;--1:#005CC5">0</span><span style="--0:#E1E4E8;--1:#24292E">; </span><span style="--0:#79B8FF;--1:#005CC5">transform</span><span style="--0:#E1E4E8;--1:#24292E">: </span><span style="--0:#79B8FF;--1:#005CC5">translateY</span><span style="--0:#E1E4E8;--1:#24292E">(</span><span style="--0:#79B8FF;--1:#005CC5">4</span><span style="--0:#F97583;--1:#BF3441">px</span><span style="--0:#E1E4E8;--1:#24292E">); }</span></div></div><div class="ec-line" style="--ecIndent:2ch"><div class="code"><span class="indent">  </span><span style="--0:#B392F0;--1:#6F42C1">to</span><span style="--0:#E1E4E8;--1:#24292E">   { </span><span style="--0:#79B8FF;--1:#005CC5">opacity</span><span style="--0:#E1E4E8;--1:#24292E">: </span><span style="--0:#79B8FF;--1:#005CC5">1</span><span style="--0:#E1E4E8;--1:#24292E">; </span><span style="--0:#79B8FF;--1:#005CC5">transform</span><span style="--0:#E1E4E8;--1:#24292E">: </span><span style="--0:#79B8FF;--1:#005CC5">translateY</span><span style="--0:#E1E4E8;--1:#24292E">(</span><span style="--0:#79B8FF;--1:#005CC5">0</span><span style="--0:#E1E4E8;--1:#24292E">); }</span></div></div><div class="ec-line"><div class="code"><span style="--0:#E1E4E8;--1:#24292E">}</span></div></div></code></pre><div class="copy"><button title="Copy to clipboard" data-copied="Copied!" data-code="@keyframes bio-card-in {  from { opacity: 0; transform: translateY(4px); }  to   { opacity: 1; transform: translateY(0); }}"><div></div></button></div></figure></div>
+<p>In the rendered page the <code>animation:</code> references survived but the keyframes block was just gone. No keyframes, no animation, no transition, just a jump cut on every tab click.</p>
+<p>PnP’s template service rewrites every selector in the <code>&lt;style&gt;</code> block to scope it to the web part’s instance id, so <code>.bio-card { … }</code> becomes <code>#pnp-template_&lt;guid&gt; .bio-card { … }</code>. That works fine for regular rules but it does the same thing to at-rules: <code>@keyframes bio-card-in { … }</code> becomes <code>#pnp-template_&lt;guid&gt; @keyframes bio-card-in { … }</code>, which isn’t legal CSS. The browser drops the whole rule on the floor. The reference still parses but has no body to animate against.</p>
+<p>The workaround is to use <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@starting-style"><code>@starting-style</code></a> <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_nesting">nested</a> inside a real selector rule, so the scoper only ever prefixes the outer selector. The nested at-rule rides along inside the rule body and reaches the browser intact. Combined with <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transition-behavior"><code>transition-behavior: allow-discrete</code></a> for the <code>display</code> swap, that gets both an enter and exit transition:</p>
+<div class="expressive-code"><figure class="frame"><figcaption class="header"></figcaption><pre data-language="css" class="wrap" style="--ecMaxLine:80ch"><code><div class="ec-line"><div class="code"><span style="--0:#B392F0;--1:#6F42C1">.bio-grid</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#B392F0;--1:#6F42C1">.bio-card</span><span style="--0:#E1E4E8;--1:#24292E"> {</span></div></div><div class="ec-line" style="--ecIndent:2ch"><div class="code"><span class="indent">  </span><span style="--0:#79B8FF;--1:#005CC5">display</span><span style="--0:#E1E4E8;--1:#24292E">: </span><span style="--0:#79B8FF;--1:#005CC5">none</span><span style="--0:#E1E4E8;--1:#24292E">;</span></div></div><div class="ec-line" style="--ecIndent:2ch"><div class="code"><span class="indent">  </span><span style="--0:#79B8FF;--1:#005CC5">opacity</span><span style="--0:#E1E4E8;--1:#24292E">: </span><span style="--0:#79B8FF;--1:#005CC5">0</span><span style="--0:#E1E4E8;--1:#24292E">;</span></div></div><div class="ec-line" style="--ecIndent:2ch"><div class="code"><span class="indent">  </span><span style="--0:#79B8FF;--1:#005CC5">transform</span><span style="--0:#E1E4E8;--1:#24292E">: </span><span style="--0:#79B8FF;--1:#005CC5">translateY</span><span style="--0:#E1E4E8;--1:#24292E">(</span><span style="--0:#79B8FF;--1:#005CC5">4</span><span style="--0:#F97583;--1:#BF3441">px</span><span style="--0:#E1E4E8;--1:#24292E">);</span></div></div><div class="ec-line"><div class="code"><span style="--0:#E1E4E8;--1:#24292E">}</span></div></div><div class="ec-line"><div class="code"><span style="--0:#B392F0;--1:#6F42C1">.bio-card</span><span style="--0:#E1E4E8;--1:#24292E"> {</span></div></div><div class="ec-line" style="--ecIndent:2ch"><div class="code"><span class="indent">  </span><span style="--0:#99A0A6;--1:#616972">/* ... appearance ... */</span></div></div><div class="ec-line" style="--ecIndent:2ch"><div class="code"><span class="indent">  </span><span style="--0:#79B8FF;--1:#005CC5">transition</span><span style="--0:#E1E4E8;--1:#24292E">:</span></div></div><div class="ec-line" style="--ecIndent:4ch"><div class="code"><span class="indent"><span style="--0:#E1E4E8;--1:#24292E">    </span></span><span style="--0:#E1E4E8;--1:#24292E">opacity </span><span style="--0:#79B8FF;--1:#005CC5">0.18</span><span style="--0:#F97583;--1:#BF3441">s</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#79B8FF;--1:#005CC5">ease-out</span><span style="--0:#E1E4E8;--1:#24292E">,</span></div></div><div class="ec-line" style="--ecIndent:4ch"><div class="code"><span class="indent"><span style="--0:#E1E4E8;--1:#24292E">    </span></span><span style="--0:#E1E4E8;--1:#24292E">transform </span><span style="--0:#79B8FF;--1:#005CC5">0.18</span><span style="--0:#F97583;--1:#BF3441">s</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#79B8FF;--1:#005CC5">ease-out</span><span style="--0:#E1E4E8;--1:#24292E">,</span></div></div><div class="ec-line" style="--ecIndent:4ch"><div class="code"><span class="indent"><span style="--0:#E1E4E8;--1:#24292E">    </span></span><span style="--0:#E1E4E8;--1:#24292E">display </span><span style="--0:#79B8FF;--1:#005CC5">0.18</span><span style="--0:#F97583;--1:#BF3441">s</span><span style="--0:#E1E4E8;--1:#24292E"> allow-discrete;</span></div></div><div class="ec-line"><div class="code"><span style="--0:#E1E4E8;--1:#24292E">}</span></div></div><div class="ec-line"><div class="code"><span style="--0:#B392F0;--1:#6F42C1">#bio-tab-</span><span style="--0:#E1E4E8;--1:#24292E">{</span><span style="--0:#79B8FF;--1:#005CC5">YYYY-MM</span><span style="--0:#E1E4E8;--1:#24292E">}</span><span style="--0:#B392F0;--1:#6F42C1">:checked</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#F97583;--1:#BF3441">~</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#B392F0;--1:#6F42C1">.bio-grid</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#F97583;--1:#BF3441">&gt;</span><span style="--0:#E1E4E8;--1:#24292E"> </span><span style="--0:#B392F0;--1:#6F42C1">.bio-card</span><span style="--0:#E1E4E8;--1:#24292E">[</span><span style="--0:#B392F0;--1:#6F42C1">data-month-key</span><span style="--0:#F97583;--1:#BF3441">=</span><span style="--0:#9ECBFF;--1:#032F62">&quot;{YYYY-MM}&quot;</span><span style="--0:#E1E4E8;--1:#24292E">] {</span></div></div><div class="ec-line" style="--ecIndent:2ch"><div class="code"><span class="indent">  </span><span style="--0:#79B8FF;--1:#005CC5">display</span><span style="--0:#E1E4E8;--1:#24292E">: </span><span style="--0:#79B8FF;--1:#005CC5">block</span><span style="--0:#E1E4E8;--1:#24292E">;</span></div></div><div class="ec-line" style="--ecIndent:2ch"><div class="code"><span class="indent">  </span><span style="--0:#79B8FF;--1:#005CC5">opacity</span><span style="--0:#E1E4E8;--1:#24292E">: </span><span style="--0:#79B8FF;--1:#005CC5">1</span><span style="--0:#E1E4E8;--1:#24292E">;</span></div></div><div class="ec-line" style="--ecIndent:2ch"><div class="code"><span class="indent">  </span><span style="--0:#79B8FF;--1:#005CC5">transform</span><span style="--0:#E1E4E8;--1:#24292E">: </span><span style="--0:#79B8FF;--1:#005CC5">translateY</span><span style="--0:#E1E4E8;--1:#24292E">(</span><span style="--0:#79B8FF;--1:#005CC5">0</span><span style="--0:#E1E4E8;--1:#24292E">);</span></div></div><div class="ec-line" style="--ecIndent:2ch"><div class="code"><span class="indent"><span style="--0:#E1E4E8;--1:#24292E">  </span></span><span style="--0:#E1E4E8;--1:#24292E">@</span><span style="--0:#79B8FF;--1:#005CC5">starting-style</span><span style="--0:#E1E4E8;--1:#24292E"> { </span><span style="--0:#79B8FF;--1:#005CC5">opacity</span><span style="--0:#E1E4E8;--1:#24292E">: </span><span style="--0:#79B8FF;--1:#005CC5">0</span><span style="--0:#E1E4E8;--1:#24292E">; </span><span style="--0:#79B8FF;--1:#005CC5">transform</span><span style="--0:#E1E4E8;--1:#24292E">: </span><span style="--0:#79B8FF;--1:#005CC5">translateY</span><span style="--0:#E1E4E8;--1:#24292E">(</span><span style="--0:#79B8FF;--1:#005CC5">4</span><span style="--0:#F97583;--1:#BF3441">px</span><span style="--0:#E1E4E8;--1:#24292E">); }</span></div></div><div class="ec-line"><div class="code"><span style="--0:#E1E4E8;--1:#24292E">}</span></div></div></code></pre><div class="copy"><button title="Copy to clipboard" data-copied="Copied!" data-code=".bio-grid .bio-card {  display: none;  opacity: 0;  transform: translateY(4px);}.bio-card {  /* ... appearance ... */  transition:    opacity 0.18s ease-out,    transform 0.18s ease-out,    display 0.18s allow-discrete;}#bio-tab-{YYYY-MM}:checked ~ .bio-grid > .bio-card[data-month-key=&#34;{YYYY-MM}&#34;] {  display: block;  opacity: 1;  transform: translateY(0);  @starting-style { opacity: 0; transform: translateY(4px); }}"><div></div></button></div></figure></div>
+<p>The hidden state already has <code>opacity: 0</code> so cards leaving a tab transition naturally back down to it. The nested <code>@starting-style</code> gives a card that just became visible a from-state to interpolate from, because by the time the cascade resolves to <code>opacity: 1</code>, the browser has no prior rendered style to transition from. <code>transition-behavior: allow-discrete</code> on <code>display</code> keeps an exiting card’s box rendered for the full 0.18s while opacity fades, then discretely flips <code>display: none</code> once the timeline ends.</p>
+<p>Cross-fade, no JavaScript, no extra build steps. The scoper still mangles the at-rule on its own, but inside a parent rule it’s none of the scoper’s business.</p>
+<h2 id="portability"><a href="#portability" class="heading-link">Portability</a><a href="#portability" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>If you’re on a recent install of PnP Modern Search, this works. If you’re on 4.19.1 or earlier, the date math silently fails and the strip renders the same month twelve times. There’s no portable patch. Upgrade.</p>
+<p>The mechanics:</p>
+<p>The recipe targets <a href="https://github.com/microsoft-search/pnp-modern-search/releases/tag/4.21.0">PnP Modern Search 4.21.0</a> or newer. The <code>subtract=&#39;1 month&#39;</code> syntax relies on the rewritten <a href="https://github.com/microsoft-search/pnp-modern-search/blob/4.21.0/search-parts/src/helpers/HandlebarsHelpersExtended.ts#L414"><code>helperMomentCompat</code></a>, which whitespace-splits the hash value and forwards the parts to dayjs: <code>dayjs().subtract(1, &quot;month&quot;)</code>. On <a href="https://github.com/microsoft-search/pnp-modern-search/releases/tag/4.19.1">4.19.1</a> and earlier, the <code>moment</code> helper comes from <a href="https://github.com/helpers/handlebars-helpers">handlebars-helpers</a>’ <code>helper-date</code> package, which passes the string straight through to <code>moment().subtract(&quot;1 month&quot;)</code>, and that call is a silent no-op because <code>&quot;1 month&quot;</code> isn’t a valid moment duration. ISO 8601 durations like <code>P1M</code> parse fine in moment but <code>Number(&quot;P1M&quot;)</code> is <code>NaN</code>, so the same swap breaks the other direction on 4.21. There’s no portable duration string.</p>
+<p>(On 4.21 the chain in the recipe could also be written as <code>{{moment subtract=dur format=&#39;YYYY-MM&#39;}}</code> in a single call. The longer <code>(moment (moment) subtract=dur)</code> form is what my deployed template uses; either works.)</p>
+<p>The active-tab indicator uses CSS <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/:has"><code>:has()</code></a>, because the labels live inside a <code>.bio-tabs</code> flex container while the radios sit at the top of the page container. Adjacent-sibling (<code>+</code>) can’t cross containers. <code>:has()</code> walks up to a common ancestor and finds the checked radio there. Shipped in all four major browsers by late 2023.</p>
+<p><code>@starting-style</code>, <code>transition-behavior: allow-discrete</code>, and CSS nesting are newer. All three are in Chrome / Edge 117+ and Safari 17.5+. SharePoint Online runs on modern Chromium and these all work today; if you have to support older targets, drop the cross-fade section and the rest of the template still renders fine.</p>
+<h2 id="the-repo"><a href="#the-repo" class="heading-link">The repo</a><a href="#the-repo" class="heading-anchor" aria-label="Copy link to this section" tabindex="-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Both templates plus a small README and demo screenshots live here:</p>
+<a class="repo-link" href="https://github.com/charlievogt/pnp-search-templates" target="_blank" rel="noopener noreferrer" aria-label="Open charlievogt/pnp-search-templates on GitHub"> <svg class="repo-link__icon" viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true"> <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path> </svg> <div class="repo-link__body"> <div class="repo-link__name"> <span class="repo-link__owner">charlievogt</span> <span class="repo-link__sep">/</span> <strong class="repo-link__repo">pnp-search-templates</strong>  </div> <p class="repo-link__desc">Handlebars templates for PnP Modern Search: trailing-12-months tab strip (flat and year-grouped variants) plus a ±45-day top section.</p>  </div> <span class="repo-link__arrow" aria-hidden="true">↗</span> </a> 
+<p>Drop either HTML file into a SharePoint library, point a Search Results web part at it as the external template URL, give it items with the right field names, and that’s the whole installation. Whether the data comes from out-of-the-box SharePoint Search, Microsoft Search, or a custom extensibility library is up to you. The template doesn’t care.</p>
+<p>No more monthly edits.</p>  </div> <nav aria-label="Post navigation" class="mt-20 grid gap-3 border-t border-border/70 pt-10 sm:grid-cols-2"><a href="/posts/tenant-orphan-asset-cleanup" class="card group flex flex-col gap-1.5 p-5 sm:col-start-1"><span class="meta-sm flex items-center gap-1.5 text-fg-muted transition-colors group-hover:text-accent"><span aria-hidden="true">←</span><span>Older</span></span><span class="font-medium text-fg transition-colors group-hover:text-accent">SharePoint orphan cleanup that survives renames</span></a><span class="hidden sm:block"></span></nav> <section data-pagefind-ignore="all" class="mt-20 border-t border-border/70 pt-10"> <h2 class="meta-sm mb-4 text-fg-muted">Comments &amp; reactions</h2> <div class="giscus-mount"></div> </section> <script>(function(){const mapping = "pathname";
+
+  // --- Giscus bootstrap ---------------------------------------------------
+  // Mounts the Giscus client script into .giscus-mount with the current
+  // site theme baked in (prevents flash-of-wrong-theme).
+
+  function giscusTheme() {
+    return document.documentElement.getAttribute('data-theme') === 'dark'
+      ? 'noborder_dark'
+      : 'noborder_light';
+  }
+
+  function mountGiscus() {
+    const mount = document.querySelector('.giscus-mount');
+    if (!mount) return;
+    // Already mounted? (e.g., after Astro view-transition swap)
+    if (mount.querySelector('iframe.giscus-frame, script[src*="giscus"]'))
+      return;
+
+    const s = document.createElement('script');
+    s.src = 'https://giscus.app/client.js';
+    s.dataset.repo = 'charlievogt/charlie.tools';
+    s.dataset.repoId = 'R_kgDOSKys8g';
+    s.dataset.category = 'Comments';
+    s.dataset.categoryId = 'DIC_kwDOSKys8s4C7kX3';
+    s.dataset.mapping = mapping;
+    s.dataset.strict = '0';
+    s.dataset.reactionsEnabled = '1';
+    s.dataset.emitMetadata = '0';
+    s.dataset.inputPosition = 'bottom';
+    s.dataset.theme = giscusTheme();
+    s.dataset.lang = 'en';
+    s.dataset.loading = 'lazy';
+    s.crossOrigin = 'anonymous';
+    s.async = true;
+    mount.appendChild(s);
+  }
+
+  // --- Theme sync ---------------------------------------------------------
+  function pushThemeToGiscus() {
+    const iframe = document.querySelector('iframe.giscus-frame');
+    if (!iframe || !iframe.contentWindow) return;
+    iframe.contentWindow.postMessage(
+      { giscus: { setConfig: { theme: giscusTheme() } } },
+      'https://giscus.app',
+    );
+  }
+
+  // Only bind the observer once per page session.
+  if (!window.__giscusThemeBound) {
+    window.__giscusThemeBound = true;
+    new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        if (m.attributeName === 'data-theme') {
+          pushThemeToGiscus();
+        }
+      }
+    }).observe(document.documentElement, { attributes: true });
+  }
+
+  // Mount now + on every view-transition navigation.
+  mountGiscus();
+  document.addEventListener('astro:page-load', mountGiscus);
+})();</script> </article>  </main> <footer data-pagefind-ignore="all" class="relative mt-32 border-t border-border/70"> <div class="mx-auto flex w-full max-w-content flex-col items-start justify-between gap-6 px-screen-px py-10 sm:flex-row sm:items-center"> <div class="flex items-baseline gap-3"> <span class="group text-sm inline-flex items-baseline font-semibold leading-none" style="letter-spacing: -0.025em;"> <span class="text-fg transition-colors group-hover:text-accent">charlie</span><span class="inline-block text-accent transition-transform duration-300 group-hover:-translate-y-[1px]" style="font-size: 1.15em; line-height: 1; margin: 0 0.01em;" aria-hidden="true">.</span><span class="text-fg transition-colors group-hover:text-accent">tools</span> </span> <span class="meta-sm">&copy; 2026</span> </div> <nav aria-label="Secondary"> <ul class="flex items-center gap-5"> <li> <a href="/rss.xml" class="meta transition-colors hover:text-fg">
+RSS
+</a> </li> <li> <a href="/sitemap-index.xml" class="meta transition-colors hover:text-fg">
+Sitemap
+</a> </li> <li> <a href="https://github.com/charlievogt" rel="noopener" class="meta transition-colors hover:text-fg">
+GitHub
+</a> </li> </ul> </nav> </div> </footer> <script>
+      // Heading-link / heading-anchor click handling.
+      //
+      // - Intercepts both the wrapping title link AND the # icon so we
+      //   can use history.replaceState() instead of letting the browser's
+      //   default navigation push a history entry for every section.
+      //   Result: back button returns to the page the visitor came from,
+      //   not to the previous anchor on the same page.
+      //
+      // - preventDefault here does NOT affect right-click / tap-and-hold
+      //   context menus, so the browser's native "Copy Link" menu for
+      //   the title link still works.
+      //
+      // - When the user clicks the # icon specifically, also copy the
+      //   fully-resolved URL to clipboard and flash the copied state.
+      (function () {
+        if (window.__headingLinkBound) return;
+        window.__headingLinkBound = true;
+
+        document.addEventListener('click', function (e) {
+          // Let modifier-clicks behave normally (open in new tab, etc.)
+          if (
+            e.defaultPrevented ||
+            e.button !== 0 ||
+            e.metaKey ||
+            e.ctrlKey ||
+            e.shiftKey ||
+            e.altKey
+          )
+            return;
+
+          var t = e.target;
+          if (!(t instanceof Element)) return;
+          var link = t.closest('a.heading-link, a.heading-anchor');
+          if (!link) return;
+
+          var href = link.getAttribute('href');
+          if (!href || href.charAt(0) !== '#') return;
+
+          var id = decodeURIComponent(href.slice(1));
+          var target = document.getElementById(id);
+          if (!target) return;
+
+          // Block default nav so it doesn't push a history entry
+          e.preventDefault();
+
+          // Replace the current URL so the section is shareable, but
+          // never push — anchor hopping shouldn't clutter history.
+          try {
+            history.replaceState(null, '', href);
+          } catch (_) {}
+
+          // Smooth scroll to the heading (respecting reduced motion)
+          var reduce =
+            window.matchMedia &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          target.scrollIntoView({
+            behavior: reduce ? 'auto' : 'smooth',
+            block: 'start',
+          });
+
+          // If the # icon was the thing clicked, copy + flash
+          if (link.classList.contains('heading-anchor')) {
+            var url = new URL(href, window.location.href).href;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(url).catch(function () {});
+            }
+            link.setAttribute('data-copied', 'true');
+            window.setTimeout(function () {
+              link.removeAttribute('data-copied');
+            }, 1400);
+          }
+        });
+      })();
+
+      // Smooth-scroll to the anchor when a URL with a hash is loaded.
+      // Browsers normally jump instantly on initial navigation; this
+      // intercepts, resets to the top, and then animates to the target.
+      // Respects prefers-reduced-motion.
+      (function () {
+        function smoothScrollToHash() {
+          var hash = window.location.hash;
+          if (!hash || hash.length < 2) return;
+          if (
+            window.matchMedia &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          )
+            return;
+          var id;
+          try {
+            id = decodeURIComponent(hash.slice(1));
+          } catch (_) {
+            id = hash.slice(1);
+          }
+          var target = document.getElementById(id);
+          if (!target) return;
+          // Instant reset to counteract the browser's auto-jump
+          window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+          // Smooth scroll after two frames so layout has stabilized
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+          });
+        }
+        if (!window.__hashSmoothScroll) {
+          window.__hashSmoothScroll = true;
+          if (document.readyState === 'complete') {
+            smoothScrollToHash();
+          } else {
+            window.addEventListener('load', smoothScrollToHash);
+          }
+          // Handle view-transition navigations too
+          document.addEventListener('astro:page-load', smoothScrollToHash);
+        }
+      })();
+
+      // Heading-anchor enhancement for non-MDX pages (.astro files like
+      // About). Mirrors what the rehype plugin does for markdown posts:
+      // wrap text in <a.heading-link>, append <a.heading-anchor> with
+      // the same SVG icon. Idempotent — skips headings that already
+      // have the markup.
+      (function () {
+        if (window.__headingEnhanceBound) return;
+        window.__headingEnhanceBound = true;
+
+        var ICON_SVG =
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+          '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>' +
+          '<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>' +
+          '</svg>';
+
+        function slugify(s) {
+          return (s || '')
+            .toLowerCase()
+            .trim()
+            .replace(/['’`"]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        }
+
+        function enhance(h) {
+          // Already wrapped (rehype handled it on a markdown page)?
+          if (h.querySelector(':scope > a.heading-link')) return;
+
+          if (!h.id) {
+            var slug = slugify(h.textContent);
+            if (!slug) return;
+            // Avoid id collision
+            var base = slug;
+            var n = 2;
+            while (
+              document.getElementById(slug) &&
+              document.getElementById(slug) !== h
+            ) {
+              slug = base + '-' + n++;
+            }
+            h.id = slug;
+          }
+
+          var hash = '#' + h.id;
+          var link = document.createElement('a');
+          link.href = hash;
+          link.className = 'heading-link';
+          while (h.firstChild) link.appendChild(h.firstChild);
+          h.appendChild(link);
+
+          var anchor = document.createElement('a');
+          anchor.href = hash;
+          anchor.className = 'heading-anchor';
+          anchor.setAttribute('aria-label', 'Copy link to this section');
+          anchor.tabIndex = -1;
+          anchor.innerHTML = ICON_SVG;
+          h.appendChild(anchor);
+        }
+
+        function enhanceAll() {
+          var headings = document.querySelectorAll(
+            '.prose h2, .prose h3, .prose h4, .prose h5, .prose h6',
+          );
+          for (var i = 0; i < headings.length; i++) enhance(headings[i]);
+        }
+
+        enhanceAll();
+        document.addEventListener('astro:page-load', enhanceAll);
+      })();
+    </script> </body> </html>

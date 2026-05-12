@@ -1,4 +1,121 @@
-<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>charlie.tools</title><description>Charlie Vogt writes about PowerShell, SPFx, Microsoft 365, and homelab infrastructure.</description><link>https://charlie.tools/</link><language>en-us</language><item><title>SharePoint orphan cleanup that survives renames</title><link>https://charlie.tools/posts/tenant-orphan-asset-cleanup/</link><guid isPermaLink="true">https://charlie.tools/posts/tenant-orphan-asset-cleanup/</guid><description>A Reddit thread asked how to clean up SharePoint Site Assets after deleting pages. The tenant scanner I had already built had most of the answer.</description><pubDate>Tue, 05 May 2026 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;import RepoLink from &apos;../../components/mdx/RepoLink.astro&apos;;&lt;/p&gt;
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>charlie.tools</title><description>Charlie Vogt writes about PowerShell, SPFx, Microsoft 365, and homelab infrastructure.</description><link>https://charlie.tools/</link><language>en-us</language><item><title>Trailing-month tabs in PnP Modern Search that don&apos;t need a monthly redeploy</title><link>https://charlie.tools/posts/pnp-search-trailing-month-tabs/</link><guid isPermaLink="true">https://charlie.tools/posts/pnp-search-trailing-month-tabs/</guid><description>A single Handlebars template generates a self-advancing twelve-month tab strip. No rebuilds, no SPFx helpers, no JavaScript.</description><pubDate>Tue, 12 May 2026 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;import Callout from &apos;../../components/mdx/Callout.astro&apos;;
+import RepoLink from &apos;../../components/mdx/RepoLink.astro&apos;;
+import { MonthTabsScrubber } from &apos;../../components/mdx/MonthTabsScrubber&apos;;&lt;/p&gt;
+&lt;p&gt;A SharePoint Online site I worked on had a &quot;New Employee Bios&quot; page with a tab strip that looked like this:&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Jun 2025 | Jul 2025 | Aug 2025 | … | Apr 2026 | May 2026&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;The tabs web part was the kind where each tab is just static content. Every month, someone in HR had to remember to edit the page. Type in the new bios. Add a new tab. Retire the oldest. Republish.&lt;/p&gt;
+&lt;p&gt;Modernizing meant moving the bios out of the page and into a SharePoint list with a hire date, then surfacing them through PnP Modern Search. That solves the data side. Bios become rows instead of paragraphs of page text. But the tab strip is still wide open. The naive rebuild is twelve Search Results web parts, one per month, each KQL-filtered to that month&apos;s new hires. Twelve copies of the same web part, twelve tabs, twelve manual edits a year. The monthly ritual just moves from typing bios to editing KQL.&lt;/p&gt;
+&lt;p&gt;I wanted one web part. One template. Tabs that re-render themselves.&lt;/p&gt;
+
+&lt;p&gt;That strip is computed live from the date you load this page on. Refresh it next month and you&apos;ll get a different range. The real Handlebars template that ships in production does the same thing, just at SharePoint render time instead of in React.&lt;/p&gt;
+&lt;p&gt;Here&apos;s the trick.&lt;/p&gt;
+&lt;p&gt;The web part has a built-in template language, and templates can compute things at render time, including dates relative to today. So instead of hard-coding tab labels for twelve months, the template asks the browser what today&apos;s date is and works back from there. Open it in May, get May back to last June. Open it in June, get June back to last July. The page rewrites itself every visit.&lt;/p&gt;
+&lt;h2&gt;The recipe&lt;/h2&gt;
+&lt;p&gt;PnP Modern Search&apos;s Search Results web part runs templates through &lt;a href=&quot;https://handlebarsjs.com/&quot;&gt;Handlebars&lt;/a&gt;, a small template language with helpers for common operations. The two this template uses are &lt;code&gt;JSONparse&lt;/code&gt; (turns a string of JSON into an array the template can loop over) and &lt;code&gt;moment&lt;/code&gt; (does date math). That&apos;s all you need.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-handlebars&quot;&gt;{{#with (JSONparse &quot;[\&quot;0 month\&quot;,\&quot;1 month\&quot;,\&quot;2 month\&quot;,\&quot;3 month\&quot;,\&quot;4 month\&quot;,\&quot;5 month\&quot;,\&quot;6 month\&quot;,\&quot;7 month\&quot;,\&quot;8 month\&quot;,\&quot;9 month\&quot;,\&quot;10 month\&quot;,\&quot;11 month\&quot;]&quot;) as |durations|}}
+  {{#each durations as |dur|}}
+    &amp;lt;input type=&quot;radio&quot; name=&quot;bio-tab&quot; id=&quot;bio-tab-{{getDate (moment (moment) subtract=dur) &apos;YYYY-MM&apos;}}&quot;&amp;gt;
+  {{/each}}
+{{/with}}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;JSONparse&lt;/code&gt; turns a literal string into a Handlebars-iterable array. Iterating it gives the template twelve passes, one per duration. Inside each pass, the date math chain:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-handlebars&quot;&gt;{{getDate (moment (moment) subtract=dur) &apos;YYYY-MM&apos;}}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The inner &lt;code&gt;(moment)&lt;/code&gt; returns today as a date string. The middle &lt;code&gt;(moment STRING subtract=dur)&lt;/code&gt; subtracts the duration. The outer &lt;code&gt;getDate&lt;/code&gt; formats the result as &lt;code&gt;YYYY-MM&lt;/code&gt;. Twelve iterations, twelve unique radio IDs, one per trailing month, and the values are all relative to the moment the page renders. Browsers go to bed today and wake up with a new tab strip tomorrow on the 1st of next month.&lt;/p&gt;
+&lt;p&gt;The same loop runs again for the labels. And once more inside the &lt;code&gt;&amp;lt;style&amp;gt;&lt;/code&gt; block to generate the per-month CSS visibility rules:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-handlebars&quot;&gt;#bio-tab-{{getDate (moment (moment) subtract=dur) &apos;YYYY-MM&apos;}}:checked ~ .bio-grid &amp;gt; .bio-card[data-month-key=&quot;{{getDate (moment (moment) subtract=dur) &apos;YYYY-MM&apos;}}&quot;] { display: block; }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Each card carries &lt;code&gt;data-month-key=&quot;2026-04&quot;&lt;/code&gt; (or whichever month its &lt;code&gt;EffectiveDate&lt;/code&gt; falls in), and the matching &lt;code&gt;:checked ~&lt;/code&gt; sibling rule shows it. Tab switching is pure CSS via hidden radios. No JavaScript, no event listeners. The browser does the work.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/blog/pnp-grouped-tabs-coming-soon.png&quot; alt=&quot;Top section: Coming Soon tab active with teal underline; Promotions &amp;amp; Transfers and Departing Employees tabs inactive. Table of six upcoming hires: Priya Anand, Marcus Bell, Sofia Castellanos, Ravi Dasgupta, Iris Fontaine, Owen Hartwell.&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;Above the bios I added a second Results web part with the same template idea but three fixed tabs: &lt;strong&gt;Coming Soon&lt;/strong&gt; (future-dated entries), &lt;strong&gt;Promotions &amp;amp; Transfers&lt;/strong&gt; and &lt;strong&gt;Departing Employees&lt;/strong&gt; (both within a ±45-day window of today). Same recipe, different durations. The date windows are evaluated against &lt;code&gt;today&lt;/code&gt; at render time, so they slide forward without any redeploys either.&lt;/p&gt;
+&lt;p&gt;While the bios web part is wired to a connected Search Box, the top one isn&apos;t. Typing a name into the search box hides the month tab strip and surfaces every matching card across all twelve months at once via a &lt;code&gt;[data-search*=&quot;query&quot; i]&lt;/code&gt; attribute selector. Pure CSS again.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/blog/pnp-grouped-tabs-search.png&quot; alt=&quot;Bios container in search mode. Tab strip is hidden. A single bio card is visible for Hassan Khouri, Support Engineer, Chicago - Loop, Start Date 3/24/2026.&quot; /&gt;&lt;/p&gt;
+&lt;h2&gt;A grouped variant&lt;/h2&gt;
+&lt;p&gt;The flat 12-month strip works, but it gets long. Twelve labels in a row crowds the page and the year ambiguity (was that &lt;code&gt;Jun&lt;/code&gt; last year or this year?) only resolves if every label carries &lt;code&gt;MMM YYYY&lt;/code&gt; text. A nicer alternative: split the strip into two year columns, each labelled with its year, each holding the months that belong to it. Six months under &lt;code&gt;2025&lt;/code&gt;, six under &lt;code&gt;2026&lt;/code&gt;. When the calendar rolls over, the split slides one month to the right.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/blog/pnp-grouped-tabs-may.png&quot; alt=&quot;Grouped trailing-12-months tab strip with year columns labelled 2025 (Jun-Dec) and 2026 (Jan-May, May active with white pill). Two cards below for Bryce Coleman (Recruiter, Seattle - HQ) and Amelia Park (Frontend Engineer, Remote).&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;Same template machinery. Each year column iterates the same twelve-duration list but only renders months whose &lt;code&gt;YYYY&lt;/code&gt; matches that column. The previous-year column auto-hides via &lt;code&gt;:empty&lt;/code&gt; on the one month a year when the trailing window happens to land entirely in the current year:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-handlebars&quot;&gt;&amp;lt;div class=&quot;bio-tab-year&quot;&amp;gt;
+  &amp;lt;div class=&quot;bio-tab-year-label&quot;&amp;gt;{{getDate (moment (moment) subtract=&apos;1 year&apos;) &apos;YYYY&apos;}}&amp;lt;/div&amp;gt;
+  &amp;lt;div class=&quot;bio-tab-months&quot;&amp;gt;
+    {{#each durations as |dur|}}
+      {{#if (eq (getDate (moment (moment) subtract=dur) &apos;YYYY&apos;)
+                (getDate (moment (moment) subtract=&apos;1 year&apos;) &apos;YYYY&apos;))}}
+        &amp;lt;label class=&quot;bio-tab-label&quot; for=&quot;bio-tab-{{getDate (moment (moment) subtract=dur) &apos;YYYY-MM&apos;}}&quot;&amp;gt;
+          {{getDate (moment (moment) subtract=dur) &apos;MMM&apos;}}
+        &amp;lt;/label&amp;gt;
+      {{/if}}
+    {{/each}}
+  &amp;lt;/div&amp;gt;
+&amp;lt;/div&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The same loop renders again with the current year&apos;s &lt;code&gt;YYYY&lt;/code&gt; for the second column. No hardcoded years, no monthly edits.&lt;/p&gt;
+&lt;p&gt;I also wanted a soft cross-fade when you switch tabs instead of cards snapping in and out. That part was harder than it should have been, and lands me in the next bug.&lt;/p&gt;
+&lt;h2&gt;Three things that bit me&lt;/h2&gt;
+&lt;p&gt;The next three sections are debug stories. Skip them if you&apos;re not building this yourself.&lt;/p&gt;
+&lt;h3&gt;1. &lt;code&gt;&amp;lt;table&amp;gt;&lt;/code&gt; foster-parenting eats your rows&lt;/h3&gt;
+&lt;p&gt;The first version of the top tab used a &lt;code&gt;&amp;lt;table&amp;gt;&lt;/code&gt; with an &lt;code&gt;{{#each}}&lt;/code&gt; loop inside &lt;code&gt;&amp;lt;tbody&amp;gt;&lt;/code&gt;. The loop iterated over thirty-four items, my &lt;code&gt;{{#if}}&lt;/code&gt; gated each row by EntryType and date window, and the DOM came out with the head row, one empty placeholder row, and… that was it. No data rows, no errors, no logs.&lt;/p&gt;
+&lt;p&gt;The browser&apos;s HTML parser has a special &lt;a href=&quot;https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-intable&quot;&gt;&quot;in table&quot;&lt;/a&gt; insertion mode that &lt;a href=&quot;https://html.spec.whatwg.org/multipage/parsing.html#foster-parenting&quot;&gt;foster-parents&lt;/a&gt; non-table content out of the &lt;code&gt;&amp;lt;table&amp;gt;&lt;/code&gt; and into the document immediately before it. Pure whitespace is allowed by the spec, so an &lt;code&gt;{{#each}}&lt;/code&gt; body that&apos;s just indented text and &lt;code&gt;&amp;lt;tr&amp;gt;&lt;/code&gt; elements should be safe, and yet mine wasn&apos;t. The most likely real culprit is &lt;a href=&quot;https://github.com/cure53/DOMPurify&quot;&gt;DOMPurify&lt;/a&gt;, which PnP runs over every rendered template before injecting it into the page; a re-parse pass turns one ambiguous string into a different DOM than the one Handlebars handed it, and &lt;code&gt;&amp;lt;tr&amp;gt;&lt;/code&gt; elements outside their original &lt;code&gt;&amp;lt;tbody&amp;gt;&lt;/code&gt; context end up getting foster-parented or dropped.&lt;/p&gt;
+&lt;p&gt;I didn&apos;t fully unwind the cause. The fix is to skip &lt;code&gt;&amp;lt;table&amp;gt;&lt;/code&gt; entirely. Use a CSS grid &lt;code&gt;&amp;lt;div&amp;gt;&lt;/code&gt; instead, with each row as its own grid container and shared &lt;code&gt;grid-template-columns&lt;/code&gt; so the columns line up. Plain divs don&apos;t put the parser into table mode, DOMPurify has no special rules for them, and the layout is identical:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-css&quot;&gt;.emp-row {
+  display: grid;
+  grid-template-columns: 1.6fr 2fr 1.4fr 1fr;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--neutralLighter);
+}
+.emp-row--head { font-weight: 600; }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;2. The search box wiring path has a tail you don&apos;t want&lt;/h3&gt;
+&lt;p&gt;When you connect a Search Box web part to a Search Results web part programmatically, the canvas content stores a dynamic data path on the Results web part like this:&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;WebPart.{searchBoxWpId}.{searchBoxInstanceId}:pnpSearchBoxWebPart:inputQueryText&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;That trailing &lt;code&gt;:inputQueryText&lt;/code&gt; is wrong. SPFx parses the colon-separated path as &lt;code&gt;&amp;lt;webPart&amp;gt;:&amp;lt;propertyId&amp;gt;:&amp;lt;fieldName&amp;gt;&lt;/code&gt; and then walks &lt;code&gt;.fieldName&lt;/code&gt; on whatever the propertyId resolves to. The search box&apos;s &lt;a href=&quot;https://github.com/microsoft-search/pnp-modern-search/blob/4.21.0/search-parts/src/webparts/searchBox/SearchBoxWebPart.ts#L427&quot;&gt;&lt;code&gt;getPropertyValue&lt;/code&gt;&lt;/a&gt; returns the raw query string, not an annotated object, so walking &lt;code&gt;.inputQueryText&lt;/code&gt; on a string returns undefined, and the connected Results web part receives an empty query forever. The data source still fires on each keystroke. It just has nothing to filter on.&lt;/p&gt;
+&lt;p&gt;The correct form is the bare &lt;code&gt;WebPart.{wpId}.{instanceId}:pnpSearchBoxWebPart&lt;/code&gt;. I confirmed by inspecting the canvas content of a PnP-built People Directory page that works correctly. Same dynamic-data path, no trailing field. Drop the suffix and the connection lights up.&lt;/p&gt;
+
+I couldn&apos;t find official docs explaining how the trailing colon segment is supposed to resolve when the propertyId returns a primitive instead of an object. The fix is empirical: I observed the symptom, compared against a working page, patched the path, and confirmed the search filter started working. The mechanism above is my best guess from reading the SearchBox source.
+
+&lt;h3&gt;3. PnP&apos;s CSS scoper silently swallows &lt;code&gt;@keyframes&lt;/code&gt;&lt;/h3&gt;
+&lt;p&gt;For the tab cross-fade I wrote what should be a normal CSS animation:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-css&quot;&gt;@keyframes bio-card-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In the rendered page the &lt;code&gt;animation:&lt;/code&gt; references survived but the keyframes block was just gone. No keyframes, no animation, no transition, just a jump cut on every tab click.&lt;/p&gt;
+&lt;p&gt;PnP&apos;s template service rewrites every selector in the &lt;code&gt;&amp;lt;style&amp;gt;&lt;/code&gt; block to scope it to the web part&apos;s instance id, so &lt;code&gt;.bio-card { … }&lt;/code&gt; becomes &lt;code&gt;#pnp-template_&amp;lt;guid&amp;gt; .bio-card { … }&lt;/code&gt;. That works fine for regular rules but it does the same thing to at-rules: &lt;code&gt;@keyframes bio-card-in { … }&lt;/code&gt; becomes &lt;code&gt;#pnp-template_&amp;lt;guid&amp;gt; @keyframes bio-card-in { … }&lt;/code&gt;, which isn&apos;t legal CSS. The browser drops the whole rule on the floor. The reference still parses but has no body to animate against.&lt;/p&gt;
+&lt;p&gt;The workaround is to use &lt;a href=&quot;https://developer.mozilla.org/en-US/docs/Web/CSS/@starting-style&quot;&gt;&lt;code&gt;@starting-style&lt;/code&gt;&lt;/a&gt; &lt;a href=&quot;https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_nesting&quot;&gt;nested&lt;/a&gt; inside a real selector rule, so the scoper only ever prefixes the outer selector. The nested at-rule rides along inside the rule body and reaches the browser intact. Combined with &lt;a href=&quot;https://developer.mozilla.org/en-US/docs/Web/CSS/transition-behavior&quot;&gt;&lt;code&gt;transition-behavior: allow-discrete&lt;/code&gt;&lt;/a&gt; for the &lt;code&gt;display&lt;/code&gt; swap, that gets both an enter and exit transition:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-css&quot;&gt;.bio-grid .bio-card {
+  display: none;
+  opacity: 0;
+  transform: translateY(4px);
+}
+.bio-card {
+  /* ... appearance ... */
+  transition:
+    opacity 0.18s ease-out,
+    transform 0.18s ease-out,
+    display 0.18s allow-discrete;
+}
+#bio-tab-{YYYY-MM}:checked ~ .bio-grid &amp;gt; .bio-card[data-month-key=&quot;{YYYY-MM}&quot;] {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+  @starting-style { opacity: 0; transform: translateY(4px); }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The hidden state already has &lt;code&gt;opacity: 0&lt;/code&gt; so cards leaving a tab transition naturally back down to it. The nested &lt;code&gt;@starting-style&lt;/code&gt; gives a card that just became visible a from-state to interpolate from, because by the time the cascade resolves to &lt;code&gt;opacity: 1&lt;/code&gt;, the browser has no prior rendered style to transition from. &lt;code&gt;transition-behavior: allow-discrete&lt;/code&gt; on &lt;code&gt;display&lt;/code&gt; keeps an exiting card&apos;s box rendered for the full 0.18s while opacity fades, then discretely flips &lt;code&gt;display: none&lt;/code&gt; once the timeline ends.&lt;/p&gt;
+&lt;p&gt;Cross-fade, no JavaScript, no extra build steps. The scoper still mangles the at-rule on its own, but inside a parent rule it&apos;s none of the scoper&apos;s business.&lt;/p&gt;
+&lt;h2&gt;Portability&lt;/h2&gt;
+&lt;p&gt;If you&apos;re on a recent install of PnP Modern Search, this works. If you&apos;re on 4.19.1 or earlier, the date math silently fails and the strip renders the same month twelve times. There&apos;s no portable patch. Upgrade.&lt;/p&gt;
+&lt;p&gt;The mechanics:&lt;/p&gt;
+&lt;p&gt;The recipe targets &lt;a href=&quot;https://github.com/microsoft-search/pnp-modern-search/releases/tag/4.21.0&quot;&gt;PnP Modern Search 4.21.0&lt;/a&gt; or newer. The &lt;code&gt;subtract=&apos;1 month&apos;&lt;/code&gt; syntax relies on the rewritten &lt;a href=&quot;https://github.com/microsoft-search/pnp-modern-search/blob/4.21.0/search-parts/src/helpers/HandlebarsHelpersExtended.ts#L414&quot;&gt;&lt;code&gt;helperMomentCompat&lt;/code&gt;&lt;/a&gt;, which whitespace-splits the hash value and forwards the parts to dayjs: &lt;code&gt;dayjs().subtract(1, &quot;month&quot;)&lt;/code&gt;. On &lt;a href=&quot;https://github.com/microsoft-search/pnp-modern-search/releases/tag/4.19.1&quot;&gt;4.19.1&lt;/a&gt; and earlier, the &lt;code&gt;moment&lt;/code&gt; helper comes from &lt;a href=&quot;https://github.com/helpers/handlebars-helpers&quot;&gt;handlebars-helpers&lt;/a&gt;&apos; &lt;code&gt;helper-date&lt;/code&gt; package, which passes the string straight through to &lt;code&gt;moment().subtract(&quot;1 month&quot;)&lt;/code&gt;, and that call is a silent no-op because &lt;code&gt;&quot;1 month&quot;&lt;/code&gt; isn&apos;t a valid moment duration. ISO 8601 durations like &lt;code&gt;P1M&lt;/code&gt; parse fine in moment but &lt;code&gt;Number(&quot;P1M&quot;)&lt;/code&gt; is &lt;code&gt;NaN&lt;/code&gt;, so the same swap breaks the other direction on 4.21. There&apos;s no portable duration string.&lt;/p&gt;
+&lt;p&gt;(On 4.21 the chain in the recipe could also be written as &lt;code&gt;{{moment subtract=dur format=&apos;YYYY-MM&apos;}}&lt;/code&gt; in a single call. The longer &lt;code&gt;(moment (moment) subtract=dur)&lt;/code&gt; form is what my deployed template uses; either works.)&lt;/p&gt;
+&lt;p&gt;The active-tab indicator uses CSS &lt;a href=&quot;https://developer.mozilla.org/en-US/docs/Web/CSS/:has&quot;&gt;&lt;code&gt;:has()&lt;/code&gt;&lt;/a&gt;, because the labels live inside a &lt;code&gt;.bio-tabs&lt;/code&gt; flex container while the radios sit at the top of the page container. Adjacent-sibling (&lt;code&gt;+&lt;/code&gt;) can&apos;t cross containers. &lt;code&gt;:has()&lt;/code&gt; walks up to a common ancestor and finds the checked radio there. Shipped in all four major browsers by late 2023.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;@starting-style&lt;/code&gt;, &lt;code&gt;transition-behavior: allow-discrete&lt;/code&gt;, and CSS nesting are newer. All three are in Chrome / Edge 117+ and Safari 17.5+. SharePoint Online runs on modern Chromium and these all work today; if you have to support older targets, drop the cross-fade section and the rest of the template still renders fine.&lt;/p&gt;
+&lt;h2&gt;The repo&lt;/h2&gt;
+&lt;p&gt;Both templates plus a small README and demo screenshots live here:&lt;/p&gt;
+
+&lt;p&gt;Drop either HTML file into a SharePoint library, point a Search Results web part at it as the external template URL, give it items with the right field names, and that&apos;s the whole installation. Whether the data comes from out-of-the-box SharePoint Search, Microsoft Search, or a custom extensibility library is up to you. The template doesn&apos;t care.&lt;/p&gt;
+&lt;p&gt;No more monthly edits.&lt;/p&gt;
+</content:encoded><category>SPFx</category><category>Microsoft365</category><category>PnPModernSearch</category></item><item><title>SharePoint orphan cleanup that survives renames</title><link>https://charlie.tools/posts/tenant-orphan-asset-cleanup/</link><guid isPermaLink="true">https://charlie.tools/posts/tenant-orphan-asset-cleanup/</guid><description>A Reddit thread asked how to clean up SharePoint Site Assets after deleting pages. The tenant scanner I had already built had most of the answer.</description><pubDate>Tue, 05 May 2026 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;import RepoLink from &apos;../../components/mdx/RepoLink.astro&apos;;&lt;/p&gt;
 &lt;p&gt;Someone on r/sharepoint asked how to clean up the per-page asset folders left behind under &lt;code&gt;SiteAssets/SitePages/&lt;/code&gt; after pages get deleted. The OP was looking at wiring up a Power Automate flow that fires on page deletion and removes the matching folder. The classic alternative is a PowerShell loop: list pages, list folders under &lt;code&gt;SiteAssets/SitePages/&lt;/code&gt;, diff the folder names against page filenames, recycle anything that doesn&apos;t match. The diff approach kills live assets on any tenant that&apos;s been around for more than a year.&lt;/p&gt;
 &lt;p&gt;The cleanup tool I ended up writing is a sibling to my &lt;a href=&quot;/posts/tenant-link-inventory/&quot;&gt;link inventory&lt;/a&gt; and &lt;a href=&quot;/posts/tenant-pdf-deduplication/&quot;&gt;duplicate detection&lt;/a&gt; tools. Same Azure Function backend, same SPFx web part, third tab. Different question of the same data.&lt;/p&gt;
 &lt;h2&gt;Why naive name-diff is a mine field&lt;/h2&gt;
